@@ -33,6 +33,7 @@
 #include <linux/log2.h>
 #include <linux/cma.h>
 #include <linux/highmem.h>
+#include <linux/io.h>
 #include <linux/debugfs.h>
 #include <linux/seq_file.h>
 #include <linux/swap.h>
@@ -359,6 +360,11 @@ int __init cma_declare_contiguous(phys_addr_t base,
 			}
 		}
 
+		/*
+		 * kmemleak scans/reads tracked objects for pointers to other
+		 * objects but this address isn't mapped and accessible
+		 */
+		kmemleak_ignore(phys_to_virt(addr));
 		base = addr;
 	}
 
