@@ -918,13 +918,13 @@ static int cpufreq_stat_notifier_trans(struct notifier_block *nb,
 	if (all_freq_old_i == -1 || all_freq_new_i == -1)
 		return 0;
 
-	cpufreq_stats_update(freq->cpu);
-
 	if (cpu_freq_old_i == cpu_freq_new_i)
 		return 0;
 
 	if (all_freq_old_i == all_freq_new_i)
 		return 0;
+
+	cpufreq_stats_update(freq->cpu);
 
 	spin_lock(&cpufreq_stats_lock);
 	atomic_set(&stat->cpu_freq_i, cpu_freq_new_i);
