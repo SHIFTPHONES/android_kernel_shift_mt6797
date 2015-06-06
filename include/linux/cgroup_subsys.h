@@ -35,6 +35,10 @@ SUBSYS(freezer)
 SUBSYS(net_cls)
 #endif
 
+#if IS_ENABLED(CONFIG_CGROUP_BFQIO)
+SUBSYS(bfqio)
+#endif
+
 #if IS_ENABLED(CONFIG_CGROUP_PERF)
 SUBSYS(perf_event)
 #endif
