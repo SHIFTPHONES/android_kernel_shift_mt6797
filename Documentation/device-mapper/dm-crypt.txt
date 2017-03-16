@@ -11,14 +11,26 @@ Parameters: <cipher> <key> <iv_offset> <device path> \
 	      <offset> [<#opt_params> <opt_params>]
 
 <cipher>
-    Encryption cipher and an optional IV generation mode.
-    (In format cipher[:keycount]-chainmode-ivmode[:ivopts]).
-    Examples:
-       des
-       aes-cbc-essiv:sha256
-       twofish-ecb
+    Encryption cipher, encryption mode and Initial Vector (IV) generator.
 
-    /proc/crypto contains supported crypto modes
+    The cipher specifications format is:
+       cipher[:keycount]-chainmode-ivmode[:ivopts]
+    Examples:
+       aes-cbc-essiv:sha256
+       aes-xts-plain64
+       serpent-xts-plain64
+
+    Cipher format also supports direct specification with kernel crypt API
+    format (selected by capi: prefix). The IV specification is the same
+    as for the first format type.
+
+    The crypto API cipher specifications format is:
+        capi:cipher_api_spec-ivmode[:ivopts]
+    Examples:
+        capi:cbc(aes)-essiv:sha256
+        capi:xts(aes)-plain64
+
+    The /proc/crypto contains a list of curently loaded crypto modes.
 
 <key>
     Key used for encryption. It is encoded as a hexadecimal number.
