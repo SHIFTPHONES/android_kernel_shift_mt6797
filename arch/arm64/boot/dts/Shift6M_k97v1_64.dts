@@ -1543,7 +1543,7 @@
 };
 /* DA9214 GPIO End */
 
-#include <k97v1_64/cust.dtsi>
+#include <Shift6M_k97v1_64/cust.dtsi>
 
 /* start sensor */
 &gsensor_mtk {
