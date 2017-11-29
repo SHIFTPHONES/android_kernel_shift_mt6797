@@ -22,7 +22,8 @@
 	atag,videolfb-islcm_inited = <0>;
 	atag,videolfb-fps= <6000>;
 	atag,videolfb-vramSize= <0x017bb000>;
-	atag,videolfb-lcmname= "r63419_wqhd_truly_phantom_2k_cmd_ok";
+/*	atag,videolfb-lcmname= "r63419_wqhd_truly_phantom_2k_cmd_ok"; */
+	atag,videolfb-lcmname= "rm67195_fhd_dsi_cmd_shift6m";
 };
 
 
@@ -329,7 +330,7 @@
 		reg = <0>;
 		spi-max-frequency = <16000000>;
 		/* fpc,gpio_irq = <0>; */
-		fpc,gpio_reset = <256>;
+		/*fpc,gpio_reset = <256>;zfr1125del*/
 		/* fpc,gpio_cs = <85>; */
 		/* fpc,vddtx_mv = <3300>;  */
 		/* fpc,txout_boost_enable; */
@@ -468,8 +469,77 @@
 };
 /* NFC end */
 
+/*zfr add  GPIO208  GPIO210 */
+&lcm_power {
+pinctrl-names = "pin_lcm_power_default", "pin_lcm_power_18_on", "pin_lcm_power_18_off", "pin_lcm_power_33_on", "pin_lcm_power_33_off","pin_lcm_reset_high","pin_lcm_reset_low";
+pinctrl-0 = <&pin_lcm_power_default>;
+pinctrl-1 = <&pin_lcm_power_18_on>;
+pinctrl-2 = <&pin_lcm_power_18_off>;
+pinctrl-3 = <&pin_lcm_power_33_on>;
+pinctrl-4 = <&pin_lcm_power_33_off>;
+pinctrl-5 = <&pin_lcm_reset_high>;
+pinctrl-6 = <&pin_lcm_reset_low>;
+status = "okay";
+};
+&pio {
+        pin_lcm_power_default: lcmpower_18@0 {
+        };
+        pin_lcm_power_18_on: lcmpower_18@1{
+                        pins_cmd_dat {
+                            pins = <PINMUX_GPIO208__FUNC_GPIO208>;
+                            slew-rate = <1>;
+                            bias-disable;
+                            output-high;
+                        };
+        };
+        pin_lcm_power_18_off: lcmpower_18@2 {
+                       pins_cmd_dat {
+                           pins = <PINMUX_GPIO208__FUNC_GPIO208>;
+                           slew-rate = <1>;
+                           bias-disable;
+                           output-low;
+                        };
+       };
+
+       pin_lcm_power_33_on: lcmpower_33@1{
+                       pins_cmd_dat {
+                           pins = <PINMUX_GPIO207__FUNC_GPIO207>;
+                           slew-rate = <1>;
+                           bias-disable;
+                           output-high;
+                       };
+       };
+
+       pin_lcm_power_33_off: lcmpower_33@2 {
+                       pins_cmd_dat {
+                           pins = <PINMUX_GPIO207__FUNC_GPIO207>;
+                           slew-rate = <1>;
+                           bias-disable;
+                           output-low;
+                       };
+       };
+
+      pin_lcm_reset_high: lcmreset_180@1 {
+                      pins_cmd_dat {
+                          pins = <PINMUX_GPIO180__FUNC_GPIO180>;
+                          slew-rate = <1>;
+                          bias-disable;
+                          output-high;
+                       };
+       };
+       pin_lcm_reset_low: lcmreset_180@2 {
+                      pins_cmd_dat {
+                          pins = <PINMUX_GPIO180__FUNC_GPIO180>;
+                          slew-rate = <1>;
+                          bias-disable;
+                          output-low;
+                      };
+       };
+};
+/*sds end */
+
 &touch {
-	tpd-resolution = <1440 2560>;
+	tpd-resolution = <1080 1920>;
 	use-tpd-button = <0>;
 	tpd-key-num = <3>;
 	tpd-key-local= <139 172 158 0>;
@@ -494,35 +564,35 @@
 	};
 	ctp_pins_eint_as_int: eint@0 {
 		pins_cmd_dat {
-			pins = <PINMUX_GPIO85__FUNC_EINT8>;
+			pins = <PINMUX_GPIO90__FUNC_EINT13>;
 			slew-rate = <0>;
 			bias-disable;
 		};
 	};
 	ctp_pins_eint_output0: eintoutput0 {
 		pins_cmd_dat {
-			pins = <PINMUX_GPIO85__FUNC_GPIO85>;
+			pins = <PINMUX_GPIO90__FUNC_GPIO90>;
 			slew-rate = <1>;
 			output-low;
 		};
 	};
 	ctp_pins_eint_output1: eintoutput1 {
 		pins_cmd_dat {
-			pins = <PINMUX_GPIO85__FUNC_GPIO85>;
+			pins = <PINMUX_GPIO90__FUNC_GPIO90>;
 			slew-rate = <1>;
 			output-high;
 		};
 	};
 	ctp_pins_rst_output0: rstoutput0 {
 		pins_cmd_dat {
-			pins = <PINMUX_GPIO68__FUNC_GPIO68>;
+			pins = <PINMUX_GPIO256__FUNC_GPIO256>;
 			slew-rate = <1>;
 			output-low;
 		};
 	};
 	ctp_pins_rst_output1: rstoutput1 {
 		pins_cmd_dat {
-			pins = <PINMUX_GPIO68__FUNC_GPIO68>;
+			pins = <PINMUX_GPIO256__FUNC_GPIO256>;
 			slew-rate = <1>;
 			output-high;
 		};
@@ -1342,8 +1412,8 @@
 	pinctrl-5 = <&lcm_mode_04>;
 	pinctrl-6 = <&lcm_mode_05>;
 	pinctrl-8 = <&lcm_mode_07>;
-	lcm_power_gpio = <&pio 65 0>;
-	lcm_bl_gpio = <&pio 62 0>;
+	/*lcm_power_gpio = <&pio 65 0>;*/
+	/*lcm_bl_gpio = <&pio 62 0>;*/
 	status = "okay";
 };
 
@@ -1543,6 +1613,72 @@
 };
 /* DA9214 GPIO End */
 
+/* lcm power gpio start-maliyan add */
+&lcm_gpio {
+	pinctrl-names = "default", "lcm_bl_en0", "lcm_bl_en1",
+			"lcm_power_enn0","lcm_power_enn1","lcm_power_enp0","lcm_power_enp1";
+	pinctrl-0 = <&lcm_pins_default>;
+	pinctrl-1 = <&lcm_bl_en0>;
+	pinctrl-2 = <&lcm_bl_en1>;
+	pinctrl-3 = <&lcm_power_enn0>;
+	pinctrl-4 = <&lcm_power_enn1>;
+	pinctrl-5 = <&lcm_power_enp0>;
+	pinctrl-6 = <&lcm_power_enp1>;
+	status = "okay";
+};
+
+&pio {
+
+	lcm_pins_default: displcm_default {
+	};
+	lcm_bl_en0: lcm_bl_en@0 {
+	    pins_cmd_dat {
+			pins = <PINMUX_GPIO244__FUNC_GPIO244>;
+			slew-rate = <1>;
+			output-low;
+		};
+	};
+	lcm_bl_en1: lcm_bl_en@1 {
+	    pins_cmd_dat {
+			pins = <PINMUX_GPIO244__FUNC_GPIO244>;
+			slew-rate = <1>;
+			output-high;
+		};
+	};
+	
+	lcm_power_enn0: lcm_power_enn@0 {
+	    pins_cmd_dat {
+			pins = <PINMUX_GPIO242__FUNC_GPIO242>;
+			slew-rate = <1>;
+			output-low;
+		};
+	};
+	
+	lcm_power_enn1: lcm_power_enn@1 {
+	    pins_cmd_dat {
+			pins = <PINMUX_GPIO242__FUNC_GPIO242>;
+			slew-rate = <1>;
+			output-high;
+		};
+	};
+
+	lcm_power_enp0: lcm_power_enp@0 {
+	    pins_cmd_dat {
+			pins = <PINMUX_GPIO253__FUNC_GPIO253>;
+			slew-rate = <1>;
+			output-low;
+		};
+	};
+
+	lcm_power_enp1: lcm_power_enp@1 {
+	    pins_cmd_dat {
+			pins = <PINMUX_GPIO253__FUNC_GPIO253>;
+			slew-rate = <1>;
+			output-high;
+		};
+	};
+};
+/* lcm power gpio end */
 #include <Shift6M_k97v1_64/cust.dtsi>
 
 /* start sensor */
