@@ -3973,6 +3973,10 @@
 		mtkfb: mtkfb@0 {
 			compatible = "mediatek,mtkfb";
 		};
+		
+		lcm_gpio: lcm_gpio@0 {
+			compatible = "mediatek,lcm_gpio";
+		};
 
 		fpc1145: fpc {
 			compatible = "mediatek,fpc1145";
@@ -4095,6 +4099,10 @@
 
 	};
 /*End of SOC*/
+/* lcm_enable */
+  lcm_power:lcm_power_pin {
+   compatible = "mediatek,lcm_power";
+  };
 /* sensor part */
 	hwmsensor@0 {
 			compatible = "mediatek,hwmsensor";

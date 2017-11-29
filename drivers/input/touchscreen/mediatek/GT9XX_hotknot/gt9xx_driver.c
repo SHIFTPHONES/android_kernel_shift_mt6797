@@ -36,10 +36,10 @@
 
 #include "tpd.h"
 
-#include "gt9xx_config.h"
+#include "include/config_default/gt9xx_config.h"
 #include "include/tpd_gt9xx_common.h"
 #if !((defined(CONFIG_GTP_AUTO_UPDATE) && defined(CONFIG_GTP_HEADER_FW_UPDATE)) && !defined(CONFIG_GTP_COMPATIBLE_MODE))
-#include "gt9xx_firmware.h"
+#include "include/firmware_default/gt9xx_firmware.h"
 #endif
 #define GUP_FW_INFO
 #if defined(CONFIG_TPD_PROXIMITY)
@@ -1332,8 +1332,8 @@ static s32 gtp_init_panel(struct i2c_client *client)
 	ret = gtp_i2c_read(client, config, cfg_len + GTP_ADDR_LENGTH);
 	if (ret < 0) {
 		GTP_ERROR("Read Config Failed, Using DEFAULT Resolution & INT Trigger!");
-		abs_x_max = GTP_MAX_WIDTH;
-		abs_y_max = GTP_MAX_HEIGHT;
+		//abs_x_max = GTP_MAX_WIDTH;
+		//abs_y_max = GTP_MAX_HEIGHT;
 		int_type = GTP_INT_TRIGGER;
 	}
 #endif
@@ -2930,7 +2930,7 @@ Output:
 *******************************************************/
 static s8 gtp_enter_sleep(struct i2c_client *client)
 {
-	int ret = 0;
+	//int ret = 0;
 
 #if defined(CONFIG_GTP_COMPATIBLE_MODE)
 	if (CHIP_TYPE_GT9F == gtp_chip_type) {
