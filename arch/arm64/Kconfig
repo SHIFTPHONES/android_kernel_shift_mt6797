@@ -413,6 +413,13 @@ config ARCH_MT6797
 	  Support for evb6797_64 related projects
 	  Support for k97_64 related projects
 
+config SHIFT6M_PROJECT
+	bool "Enable SHIFT6M PROJECT config"
+	depends on ARCH_MT6797
+	default n
+	help
+	  For SHIFT6M PROJECTconfig
+
 config ARCH_ELBRUS
         bool "MediaTek ELBRUS"
         select PINCTRL
