@@ -41,7 +41,7 @@
 
 
 /* #define CAM_CALGETDLT_DEBUG */
-/*#define CAM_CAL_DEBUG*/
+#define CAM_CAL_DEBUG
 #ifdef CAM_CAL_DEBUG
 #define PFX "cat2416c"
 #define CAM_CALINF(fmt, arg...)    pr_debug("[%s] " fmt, __func__, ##arg)
@@ -85,7 +85,7 @@ static DEFINE_SPINLOCK(g_CAM_CALLock);/*for SMP*/
 /* A0 for page0 A2 for page 2 and so on for 8 pages */
 
 static struct i2c_client *g_pstI2Cclient;
-static int selective_read_region(u32 addr, u8 *data, u16 i2c_id, u32 size);
+//static int selective_read_region(u32 addr, u8 *data, u16 i2c_id, u32 size);
 
 
 /* 81 is used for V4L driver */
@@ -117,6 +117,7 @@ static void kdSetI2CSpeed(u32 i2cSpeed)
 }
 */
 
+#if 0
 static int iReadRegI2C(u8 *a_pSendData , u16 a_sizeSendData, u8 *a_pRecvData, u16 a_sizeRecvData, u16 i2cId)
 {
 	int  i4RetValue = 0;
@@ -249,6 +250,8 @@ static int selective_read_region(u32 addr, u8 *data, u16 i2c_id, u32 size)
 	return ret;
 }
 
+#endif 
+//end1
 
 /* Burst Write Data */
 /*
@@ -258,16 +261,514 @@ static int iWriteData(unsigned int  ui4_offset, unsigned int  ui4_length, unsign
 	return 0;
 }
 */
+
+#if 1
+//#if defined(CONFIG_SHIFT6M_PROJECT)  //pxs_add 20171024
+//pxs_add
+
+static int otp_flag=0;
+#define S5K3P3OTP_DEVICE_MQ_ID 0xA0
+
+int iReadCAM_CAL(u16 a_u2Addr, u8 *a_puBuff)
+{
+    int  i4RetValue = 0;    
+    char puReadCmd[2] = {(char)(a_u2Addr>>8), (char)(a_u2Addr & 0xFF) };
+        
+    spin_lock(&g_CAM_CALLock); //for SMP
+  
+    g_pstI2Cclient->addr = S5K3P3OTP_DEVICE_MQ_ID>>1;
+      
+	//g_pstI2Cclient->timing=400;
+    spin_unlock(&g_CAM_CALLock); // for SMP    
+    
+    i4RetValue = i2c_master_send(g_pstI2Cclient, puReadCmd, 2);
+
+    if (i4RetValue != 2)
+    {
+      
+	    printk("[S5K3P3OTP-CAMERA SENSOR] I2C send failed, addr = 0x%x, data = 0x%x !! \n", a_u2Addr,  *a_puBuff );
+        return -1;
+    }
+
+    i4RetValue = i2c_master_recv(g_pstI2Cclient, (char *)a_puBuff, 1);
+	  CAM_CALDB("[CAM_CAL][iReadCAM_CAL] Read 0x%x=0x%x \n", a_u2Addr, a_puBuff[0]);
+    if (i4RetValue != 1)
+    {
+        printk("S5K3P3OTP-[CAM_CAL] I2C read data failed!! \n");
+        return -1;
+    } 
+   
+
+
+    return 0;
+}
+
+
+static u8 Read_AF_Otp(u16 address,u8 *iBuffer,unsigned int buffersize)
+{	
+	u8 readbuff, i;
+	//unsigned int check_sum = 0;
+ 
+	for(i=0;i<buffersize;i++)
+		{
+	     iReadCAM_CAL((address+i),&readbuff);
+			*(iBuffer+i)=readbuff;
+	      CAM_CALDB("read af data[%d]=0x%x\n",i,iBuffer[i]);
+	}
+	//Check_sum  add by ljj
+#if 0
+	xxx
+	for(i=0;i<6;i++)
+	{
+		iReadCAM_CAL((0x781+i),&readbuff);
+		CAM_CALDB("[ljj]read af data[%d]=0x%x\n",i,readbuff);
+		check_sum += readbuff;
+	}
+	iReadCAM_CAL((0x781+6),&readbuff);	
+	if(readbuff == (check_sum%256))
+	{
+		CAM_CALDB("[ljj][AF_info][Check_sum] OK! [0x%x]: %d == [check_sum]:%d  \n",0x781+6,readbuff,check_sum);
+	}else{
+		printk("[ljj][AF_info][Check_sum] Failed! [0x%x]: %d != [check_sum]:%d  \n",0x781+6,readbuff,check_sum);
+	}
+#endif
+	//end ljj		  
+	return 1;
+
+}
+
+
+static u8 Read_AWB_Otp(u16 address,u8 *iBuffer,unsigned int buffersize)
+{
+	u8 readbuff, i;
+ 	//unsigned int check_sum = 0;
+	for(i=0;i<buffersize;i++)
+		{
+	    iReadCAM_CAL((address+i),&readbuff);
+			*(iBuffer+i)=readbuff;
+	    CAM_CALDB("read awb data[%d]=0x%x\n",i,iBuffer[i]);
+	}
+	//Check_sum  add by ljj
+#if 0
+	for(i=0;i<8;i++)
+	{
+		iReadCAM_CAL((0x11+i),&readbuff);
+		CAM_CALDB("[ljj]read awb data[%d]=0x%x\n",i,readbuff);
+		check_sum += readbuff;
+	}
+	iReadCAM_CAL((0x11+8),&readbuff);	
+	if(readbuff == (check_sum%256))
+	{
+		CAM_CALDB("[ljj][AWB_info][Check_sum] OK! [0x%x]: %d == [check_sum]:%d  \n",0x11+8,readbuff,check_sum);
+	}else{
+		printk("[ljj][AWB_info][Check_sum] Failed! [0x%x]: %d != [check_sum]:%d  \n",0x11+8,readbuff,check_sum);
+	}
+#endif
+	//end ljj	
+	return 1;
+}
+
+
+ int Read_LSC_Otp(u16 address,unsigned char *iBuffer,unsigned int buffersize)
+ {
+	u8 readbuff;
+ 	int i = 0;
+	//unsigned int check_sum = 0;
+    CAM_CALDB("S5K3P3OTP-Read_LSC_Otp-66-otp_flag=%d\n",otp_flag);	
+	for(i=0;i<buffersize;i++)
+	{
+	       iReadCAM_CAL((address+i),&readbuff);
+		     *(iBuffer+i)=readbuff;
+		     // OTPDataMQ[i]=readbuff;
+			//  check_sum += readbuff;
+	}
+	//Check_sum  add by ljj
+#if 0
+	iReadCAM_CAL(address+buffersize,&readbuff);
+	if(readbuff == (check_sum%256))
+	{
+		
+		CAM_CALDB("[ljj][LSC_info][Check_sum] OK! [0x076d]: %d == [check_sum]:%d  \n",readbuff,check_sum);
+	}else{
+		
+		printk("[ljj][LSC_info][Check_sum] Failed! [0x076d]: %d != [check_sum]:%d  \n",readbuff,check_sum);
+	}
+#endif
+	//end ljj	
+  	 
+	 return 1;
+}
+
+
+ void ReadOtp(u16 address,u8 *iBuffer,unsigned int buffersize)
+{
+		u16 i = 0;
+		u8 readbuff;
+		int ret ;
+#if 0
+		if(buffersize==1)
+		{
+			ret= iReadCAM_CAL(address-1,&readbuff);
+			CAM_CALDB("[ljj][Valid][CAM_CAL]address+i = 0x%x,readbuff = 0x%x\n",(address-1),readbuff );
+		}
+#endif
+		//end ljj		
+		//printk("[ljj]S5K3P3OTP-ReadOtp-[CAM_CAL]ENTER address:0x%x buffersize:%d\n ",address, buffersize);
+		if (1)
+		{
+			for(i = 0; i<buffersize; i++)
+			{				
+				ret= iReadCAM_CAL(address+i,&readbuff);
+				CAM_CALDB("[CAM_CAL]address+i = 0x%x,readbuff = 0x%x\n",(address+i),readbuff );
+				*(iBuffer+i) =(unsigned char)readbuff;
+			}
+		}
+		
+		//Check_sum  add by ljj
+#if 0
+		for(i = 0; i < 8;i++)	//0x0001~0x0008  check sum
+		{
+			ret= iReadCAM_CAL(address+i,&readbuff);
+			check_sum += readbuff;
+			CAM_CALDB("[ljj][Check_sum]address+i = 0x%x,readbuff = 0x%x\n",(address-1),readbuff );
+		}		
+		iReadCAM_CAL(address+8,&readbuff);//check_sum 0x0009
+		if(readbuff == (check_sum%256))
+		{
+			CAM_CALDB("[ljj][Module_info][Check_sum] OK! [0x0009]: %d == [check_sum]:%d  \n",readbuff,check_sum);
+		}else{
+			printk("[ljj][Module_info][Check_sum] Failed! [0x0009]: %d != [check_sum]:%d  \n",readbuff,check_sum);
+		}
+#endif
+		//end ljj
+}
+ 
+//Burst Write Data
+//static int iWriteData(unsigned int  ui4_offset, unsigned int  ui4_length, unsigned char * pinputdata)
+//{
+	//return 0;
+//}
+
+//Burst Read Data  iReadData(0x00,932,OTPData);
+ unsigned int cat24c16_iReadData(u16 ui4_offset, unsigned int  ui4_length, u8 *pinputdata)
+{
+    
+    CAM_CALDB("S5K3P3OTP-iReadData-ui4_offset=%d, ui4_length=%d\n",ui4_offset,ui4_length);
+    
+	if(ui4_length ==1) // layout check
+    {	
+	    ReadOtp(ui4_offset, pinputdata, ui4_length);
+	   	
+    }
+	else if(ui4_length ==4)// awb 
+    {
+		
+	    Read_AWB_Otp(ui4_offset, pinputdata, ui4_length);
+	   	
+    }
+	else if(ui4_length ==2)// af
+    {
+		
+	    Read_AF_Otp(ui4_offset, pinputdata, ui4_length);
+	   	
+    }
+    else{  //lsc
+		Read_LSC_Otp(ui4_offset, pinputdata, ui4_length);
+
+    }
+   return 0;
+}
+
+
+
+
 unsigned int cat24c16_selective_read_region(struct i2c_client *client, unsigned int addr,
 	unsigned char *data, unsigned int size)
 {
+	unsigned int ret;
 	g_pstI2Cclient = client;
-	if (selective_read_region(addr, data, g_pstI2Cclient->addr, size) == 0)
-		return size;
-	else
-		return 0;
+	otp_flag=0;
+	ret=cat24c16_iReadData(addr,size,data);
+	 
+	 CAM_CALDB("cat24c16.c-cat24c16_selective_read_region-addr=%x,data=%p,size=%d,*data=%d,ret=%d\n",addr,data,size,*data,ret);
+	 return 1;
+
 
 }
+
+
+#else  // orig_start
+
+
+static int otp_flag=1;
+#define S5K3P3OTP_DEVICE_MQ_ID 0xB0
+
+extern u8 OTPDataMQ[];
+
+
+int iReadCAM_CAL(u16 a_u2Addr, u8 *a_puBuff)
+{
+//modify by ljj
+
+    int  i4RetValue = 0;
+    
+    char puReadCmd[2] = {(char)(a_u2Addr>>8), (char)(a_u2Addr & 0xFF) };
+    
+   
+     
+    spin_lock(&g_CAM_CALLock); //for SMP
+  
+
+
+    g_pstI2Cclient->addr = S5K3P3OTP_DEVICE_MQ_ID>>1;
+      
+	  //g_pstI2Cclient->timing=400;
+    spin_unlock(&g_CAM_CALLock); // for SMP    
+    
+    i4RetValue = i2c_master_send(g_pstI2Cclient, puReadCmd, 2);
+
+    if (i4RetValue != 2)
+    {
+      
+	      printk("[S5K3P3OTP-CAMERA SENSOR] I2C send failed, addr = 0x%x, data = 0x%x !! \n", a_u2Addr,  *a_puBuff );
+        return -1;
+    }
+
+    i4RetValue = i2c_master_recv(g_pstI2Cclient, (char *)a_puBuff, 1);
+	  CAM_CALDB("[CAM_CAL][iReadCAM_CAL] Read 0x%x=0x%x \n", a_u2Addr, a_puBuff[0]);
+    if (i4RetValue != 1)
+    {
+        printk("S5K3P3OTP-[CAM_CAL] I2C read data failed!! \n");
+        return -1;
+    } 
+   
+
+
+    return 0;
+}
+
+
+static u8 Read_AF_Otp(u16 address,u8 *iBuffer,unsigned int buffersize)
+{	
+	u8 readbuff, i;
+	unsigned int check_sum = 0; 
+ 
+	for(i=0;i<buffersize;i++)
+		{
+	     iReadCAM_CAL((address+i),&readbuff);
+			*(iBuffer+i)=readbuff;
+	      CAM_CALDB("read af data[%d]=0x%x\n",i,iBuffer[i]);
+	}
+
+#if 1   
+//Check_sum  add by ljj
+	for(i=0;i<4;i++)
+	{
+		iReadCAM_CAL((0x01B+i),&readbuff);
+		CAM_CALDB("[ljj]read af data[%d]=0x%x\n",i,readbuff);
+		check_sum += readbuff;
+	}
+	iReadCAM_CAL(0x1F,&readbuff);	
+	if(readbuff == (check_sum%256))
+	{
+		CAM_CALDB("[ljj][AF_info][Check_sum] OK! [0x%x]: %d == [check_sum]:%d  \n",0x781+6,readbuff,check_sum);
+	}else{
+		printk("[ljj][AF_info][Check_sum] Failed! [0x%x]: %d != [check_sum]:%d  \n",0x781+6,readbuff,check_sum);
+	}
+//end ljj		
+
+#endif 
+  
+	return 1;
+
+}
+
+
+static u8 Read_AWB_Otp(u16 address,u8 *iBuffer,unsigned int buffersize)
+{
+	u8 readbuff, i;
+ 	unsigned int check_sum = 0;  
+ 
+	for(i=0;i<buffersize;i++)
+		{
+	    iReadCAM_CAL((address+i),&readbuff);
+			*(iBuffer+i)=readbuff;
+	    CAM_CALDB("read awb data[%d]=0x%x\n",i,iBuffer[i]);
+	  }
+	
+
+	
+#if 1
+//Check_sum  add by ljj
+	for(i=0;i<8;i++)
+	{
+		iReadCAM_CAL((0x12+i),&readbuff);
+		CAM_CALDB("[ljj]read awb data[%d]=0x%x\n",i,readbuff);
+		check_sum += readbuff;
+	}
+	iReadCAM_CAL((0x1A),&readbuff);	
+	if(readbuff == (check_sum%256))
+	{
+		CAM_CALDB("[ljj][AWB_info][Check_sum] OK! [0x%x]: %d == [check_sum]:%d  \n",0x11+8,readbuff,check_sum);
+	}else{
+		printk("[ljj][AWB_info][Check_sum] Failed! [0x%x]: %d != [check_sum]:%d  \n",0x11+8,readbuff,check_sum);
+	}
+//end ljj	
+
+#endif 
+
+	return 1;
+
+}
+
+
+ int Read_LSC_Otp(u16 address,unsigned char *iBuffer,unsigned int buffersize)
+ {
+
+ u8 readbuff;
+ 
+ int i = 0;
+ unsigned int check_sum = 0;
+ CAM_CALDB("S5K3P3OTP-Read_LSC_Otp-66-otp_flag=%d\n",otp_flag);
+ if(otp_flag){
+
+	for(i=0;i<buffersize;i++)
+	{
+	   iBuffer[i]=OTPDataMQ[i];
+	  
+		
+	}
+ }
+else{
+	
+	for(i=0;i<buffersize;i++)
+	{
+	       iReadCAM_CAL((address+i),&readbuff);
+		     *(iBuffer+i)=readbuff;
+		     // OTPDataMQ[i]=readbuff;
+		      check_sum += readbuff;
+	}
+//Check_sum  add by ljj
+	iReadCAM_CAL(address+buffersize,&readbuff);
+	if(readbuff == (check_sum%256))
+	{
+		
+		CAM_CALDB("[ljj][LSC_info][Check_sum] OK! [0x076d]: %d == [check_sum]:%d  \n",readbuff,check_sum);
+	}else{
+		
+		printk("[ljj][LSC_info][Check_sum] Failed! [0x076d]: %d != [check_sum]:%d  \n",readbuff,check_sum);
+	}
+//end ljj	
+
+  }
+	 
+	 return 1;
+ 
+}
+
+
+ void ReadOtp(u16 address,u8 *iBuffer,unsigned int buffersize)
+{
+		u16 i = 0;
+		u8 readbuff;
+		int ret ;
+		unsigned int check_sum = 0; /*..no need  checksum for quanpu..*/
+//Check Valid  add by ljj
+		if(buffersize==1)
+		{
+			ret= iReadCAM_CAL(0x0,&readbuff);
+			CAM_CALDB("[ljj][Valid][CAM_CAL]address=:0x0,readbuff = 0x%x\n",readbuff );
+		}
+//end ljj		
+		//printk("[ljj]S5K3P3OTP-ReadOtp-[CAM_CAL]ENTER address:0x%x buffersize:%d\n ",address, buffersize);
+		if (1)
+		{
+			for(i = 0; i<buffersize; i++)
+			{				
+				ret= iReadCAM_CAL(address+i,&readbuff);
+				CAM_CALDB("[CAM_CAL]address+i = 0x%x,readbuff = 0x%x\n",(address+i),readbuff );
+				*(iBuffer+i) =(unsigned char)readbuff;
+			}
+		}
+		
+	
+	#if 1
+//Check_sum  add by ljj
+		for(i = 1; i < 9;i++)	//0x0001~0x0008  check sum
+		{
+			ret= iReadCAM_CAL(i,&readbuff);
+			check_sum += readbuff;
+			CAM_CALDB("[ljj][Check_sum]address+i = 0x%x,readbuff = 0x%x\n",(address-1),readbuff );
+		}		
+		iReadCAM_CAL(0x09,&readbuff);//check_sum 0x0009
+		if(readbuff == (check_sum%256))
+		{
+			CAM_CALDB("[ljj][Module_info][Check_sum] OK! [0x0009]: %d == [check_sum]:%d  \n",readbuff,check_sum);
+		}else{
+			printk("[ljj][Module_info][Check_sum] Failed! [0x0009]: %d != [check_sum]:%d  \n",readbuff,check_sum);
+		}
+//end ljj
+#endif
+
+}
+//Burst Write Data
+//static int iWriteData(unsigned int  ui4_offset, unsigned int  ui4_length, unsigned char * pinputdata)
+//{
+	//return 0;
+//}
+
+//Burst Read Data  iReadData(0x00,932,OTPData);
+ unsigned int cat24c16_iReadData(u16 ui4_offset, unsigned int  ui4_length, u8 *pinputdata)
+{
+  // int  i4RetValue = 0;
+   
+	 // g_module_id=GetModulesId();
+   
+    
+   // CAM_CALDB("S5K3P3OTP-iReadData-ui4_offset=%d, ui4_length=%d\n",ui4_offset,ui4_length);
+    
+	if(ui4_length ==1) // layout check
+    {	
+	    ReadOtp(ui4_offset, pinputdata, ui4_length);
+	   	
+    }
+	else if(ui4_length ==4)// awb 
+    {
+		
+	    Read_AWB_Otp(ui4_offset, pinputdata, ui4_length);
+	   	
+    }
+	else if(ui4_length ==2)// af
+    {
+		
+	    Read_AF_Otp(ui4_offset, pinputdata, ui4_length);
+	   	
+    }
+  else{  //lsc
+		Read_LSC_Otp(ui4_offset, pinputdata, ui4_length);
+
+   }
+
+   return 0;
+}
+
+
+
+
+unsigned int cat24c16_selective_read_region(struct i2c_client *client, unsigned int addr,
+	unsigned char *data, unsigned int size)
+{
+	unsigned int ret;
+	g_pstI2Cclient = client;
+	otp_flag=1;
+	ret=cat24c16_iReadData(addr,size,data);
+	 
+	 CAM_CALDB("cat24c16.c-cat24c16_selective_read_region-addr=%x,data=%p,size=%d,*data=%d,ret=%d\n",addr,data,size,*data,ret);
+	 return 1;
+
+
+}
+#endif  // orig_end
 
 
 /*#define CAT24C16_DRIVER_ON 0*/

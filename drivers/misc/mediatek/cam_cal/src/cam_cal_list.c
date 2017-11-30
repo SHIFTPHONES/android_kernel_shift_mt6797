@@ -36,23 +36,34 @@
 #endif
 
 
-#define MTK_MAX_CID_NUM 3
+#define MTK_MAX_CID_NUM 3  //modify 3->4
 unsigned int mtkCidList[MTK_MAX_CID_NUM] = {
-	0x010b00ff,/*Single MTK Format*/
-	0x020b00ff,/*Double MTK Format in One OTP/EEPRom - Legacy*/
-	0x030b00ff /*Double MTK Format in One OTP/EEPRom*/
+	0x00000002, //add for koda main camera
+	0x000000a0, //add for koda sub camera
+	0x00000023, //pxs-add 20161116 for zkyd
+//	0x010b00ff,/*Single MTK Format*/
+//	0x020b00ff,/*Double MTK Format in One OTP/EEPRom - Legacy*/
+//	0x030b00ff /*Double MTK Format in One OTP/EEPRom*/
 };
 
 stCAM_CAL_FUNC_STRUCT g_camCalCMDFunc[] = {
-	{CMD_BRCB032GWZ, brcb032gwz_selective_read_region},
+
+//	{CMD_BRCB032GWZ, brcb032gwz_selective_read_region},
 	{CMD_CAT24C16, cat24c16_selective_read_region},
-	{CMD_GT24C32A, gt24c32a_selective_read_region},
+//	{CMD_GT24C32A, gt24c32a_selective_read_region},
 
 	/*      ADD before this line */
 	{0, 0} /*end of list*/
 };
 
 stCAM_CAL_LIST_STRUCT g_camCalList[] = {
+//pxs_add
+#if 1
+//#if defined(CONFIG_SHIFT6M_PROJECT )//pxs_add 20171024
+ 	{IMX230_SENSOR_ID, 0xA0, CMD_AUTO, cam_cal_check_mtk_cid}, //add 
+	{S5K3L8_SENSOR_ID, 0xA0, CMD_AUTO, cam_cal_check_mtk_cid},	
+	{S5K3L8_SENSOR_ID_ZK, 0xA0, CMD_AUTO, cam_cal_check_mtk_cid},	
+#else
 	{OV23850_SENSOR_ID, 0xA0, CMD_AUTO, cam_cal_check_mtk_cid},
 	{OV23850_SENSOR_ID, 0xA8, CMD_AUTO, cam_cal_check_mtk_cid},
 	{S5K3M2_SENSOR_ID, 0xA0, CMD_BRCB032GWZ, cam_cal_check_mtk_cid},
@@ -74,7 +85,7 @@ stCAM_CAL_LIST_STRUCT g_camCalList[] = {
 
 	{S5K2P8_SENSOR_ID, 0xA2, CMD_AUTO, cam_cal_check_mtk_cid},/*J main */
 	{OV8858_SENSOR_ID, 0xA2, CMD_AUTO, cam_cal_check_mtk_cid},/*J sub */
-
+#endif
 	/*  ADD before this line */
 	{0, 0, CMD_NONE, 0} /*end of list*/
 };
@@ -105,8 +116,12 @@ unsigned int cam_cal_check_mtk_cid(struct i2c_client *client, cam_cal_cmd_func r
 	int j = 0;
 
 	if (readCamCalData != NULL) {
-		readCamCalData(client, 1, (unsigned char *)&calibrationID, 4);
-		CAM_CALDB("calibrationID = %x\n", calibrationID);
+		printk("pxs-otp-camcal go in readCamCalData !!!!\n");
+		printk("pxs-otp-camcal cam_cal_check_mtk_cid addr = 0x%x \n", client->addr);
+
+		readCamCalData(client, 1, (unsigned char *)&calibrationID, 1); //jun modify for koda 4 ->1
+//		readCamCalData(client, 1, (unsigned char *)&calibrationID, 4);
+		CAM_CALDB("pxs-otp-camcal calibrationID = %x\n", calibrationID);
 	}
 
 	if (calibrationID != 0)

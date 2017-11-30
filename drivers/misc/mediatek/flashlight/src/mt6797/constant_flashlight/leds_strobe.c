@@ -457,7 +457,7 @@ int FL_Init(void)
 int FL_Uninit(void)
 {
 	FL_Disable();
-	flashlight_gpio_set(FLASHLIGHT_PIN_HWEN, STATE_LOW);
+	//flashlight_gpio_set(FLASHLIGHT_PIN_HWEN, STATE_LOW);   //delete by xu
 	return 0;
 }
 

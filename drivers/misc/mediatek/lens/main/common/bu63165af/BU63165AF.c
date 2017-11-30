@@ -252,6 +252,20 @@ long BU63165AF_Ioctl(struct file *a_pstFile, unsigned int a_u4Command, unsigned 
 
 	return i4RetValue;
 }
+//ljj add for Kodak's basic current
+int BU63165AF_Standby(void)
+{
+	printk("[ljj]  BU63165AF_Standby\n");
+	if(g_pstAF_I2Cclient != NULL)
+	{
+		Main_OIS();
+		OIS_Standby();
+		msleep(20);
+	}else
+		printk("[ljj]g_pstAF_I2Cclient == NULL---------main\n");
+	return 0;
+}
+//ljj end
 
 /* Main jobs: */
 /* 1.Deallocate anything that "open" allocated in private_data. */

@@ -25,7 +25,7 @@
 #include "lens_info.h"
 
 
-#define AF_DRVNAME "DW9714AF_DRV"
+#define AF_DRVNAME "DW9715AF_DRV"
 #define AF_I2C_SLAVE_ADDR        0x18
 
 #define AF_DEBUG
@@ -181,7 +181,7 @@ static inline int setAFMacro(unsigned long a_u4Position)
 }
 
 /* ////////////////////////////////////////////////////////////// */
-long DW9714AF_Ioctl(struct file *a_pstFile, unsigned int a_u4Command, unsigned long a_u4Param)
+long DW9715AF_Ioctl(struct file *a_pstFile, unsigned int a_u4Command, unsigned long a_u4Param)
 {
 	long i4RetValue = 0;
 
@@ -212,10 +212,10 @@ long DW9714AF_Ioctl(struct file *a_pstFile, unsigned int a_u4Command, unsigned l
 }
 #if 0
 //ljj add for Kodak's basic current
-int DW9714AF_Standby(void)
+int DW9715AF_Standby(void)
 {
 	unsigned short Pos = 0;
-	printk("[ljj]  DW9714AF_Standby\n");
+	printk("[ljj]  DW9715AF_Standby\n");
 	if(g_pstAF_I2Cclient != NULL)
 	{
 		s4AF_WriteReg(0x800); /* Power down mode */ //0x80
@@ -227,13 +227,12 @@ int DW9714AF_Standby(void)
 }
 //ljj end
 #endif
-
 /* Main jobs: */
 /* 1.Deallocate anything that "open" allocated in private_data. */
 /* 2.Shut down the device on last close. */
 /* 3.Only called once on last time. */
 /* Q1 : Try release multiple times. */
-int DW9714AF_Release(struct inode *a_pstInode, struct file *a_pstFile)
+int DW9715AF_Release(struct inode *a_pstInode, struct file *a_pstFile)
 {
 	LOG_INF("Start\n");
 
@@ -259,7 +258,7 @@ int DW9714AF_Release(struct inode *a_pstInode, struct file *a_pstFile)
 	return 0;
 }
 
-int DW9714AF_SetI2Cclient(struct i2c_client *pstAF_I2Cclient, spinlock_t *pAF_SpinLock, int *pAF_Opened)
+int DW9715AF_SetI2Cclient(struct i2c_client *pstAF_I2Cclient, spinlock_t *pAF_SpinLock, int *pAF_Opened)
 {
 	g_pstAF_I2Cclient = pstAF_I2Cclient;
 	g_pAF_SpinLock = pAF_SpinLock;

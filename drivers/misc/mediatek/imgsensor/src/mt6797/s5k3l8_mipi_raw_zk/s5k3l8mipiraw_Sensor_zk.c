@@ -1,16 +1,3 @@
-/*
-* Copyright (C) 2016 MediaTek Inc.
-*
-* This program is free software; you can redistribute it and/or modify
-* it under the terms of the GNU General Public License version 2 as
-* published by the Free Software Foundation.
-*
-* This program is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-* See http://www.gnu.org/licenses/gpl-2.0.html for more details.
-*/
-
 /*****************************************************************************
  *
  * Filename:
@@ -47,7 +34,7 @@
 #include "kd_imgsensor_define.h"
 #include "kd_imgsensor_errcode.h"
 
-#include "s5k3l8mipiraw_Sensor.h"
+#include "s5k3l8mipiraw_Sensor_zk.h"
 
 /*===FEATURE SWITH===*/
   #define FPTPDAFSUPPORT   //for pdaf switch
@@ -57,17 +44,17 @@
 /*===FEATURE SWITH===*/
 
 /****************************Modify Following Strings for Debug****************************/
-#define PFX "S5K3L8"
+#define PFX "S5K3L8_zk"
 #define LOG_INF_NEW(format, args...)    pr_debug(PFX "[%s] " format, __FUNCTION__, ##args)
 #define LOG_INF LOG_INF_NEW
-#define LOG_1 LOG_INF("S5K3L8,MIPI 4LANE\n")
+#define LOG_1 LOG_INF("S5K3L8,MIPI 4LANE zk\n")
 #define SENSORDB LOG_INF
 /****************************   Modify end    *******************************************/
 
 static DEFINE_SPINLOCK(imgsensor_drv_lock);
 
 static imgsensor_info_struct imgsensor_info = {
-	.sensor_id = S5K3L8_SENSOR_ID,		//Sensor ID Value: 0x30C8//record sensor id defined in Kd_imgsensor.h
+	.sensor_id = S5K3L8_SENSOR_ID_ZK,		//Sensor ID Value: 0x30C8+1//record sensor id defined in Kd_imgsensor.h
 
 	.checksum_value = 0xba395b5c, //0x49c09f86,		//checksum value for Camera Auto Test
 
@@ -281,7 +268,7 @@ static imgsensor_info_struct imgsensor_info = {
 	.sensor_output_dataformat = SENSOR_OUTPUT_FORMAT_RAW_Gr,//sensor output first pixel color
 	.mclk = 24,//mclk value, suggest 24 or 26 for 24Mhz or 26Mhz
 	.mipi_lane_num = SENSOR_MIPI_4_LANE,//mipi lane num
-	.i2c_addr_table = {0x20, 0xff},//0x5a , record sensor support all write id addr, only supprt 4must end with 0xff
+	.i2c_addr_table = {0x5a, 0xff},// 0x20, record sensor support all write id addr, only supprt 4must end with 0xff
     .i2c_speed = 300, // i2c read/write speed
 };
 
@@ -1469,10 +1456,10 @@ static void slim_video_setting(void)
 
 }
 
-
+//pxs-add 20161116
 static kal_uint32 return_sensor_id(void)
 {
-    return ((read_cmos_sensor_byte(0x0000) << 8) | read_cmos_sensor_byte(0x0001));
+    return ( ( (read_cmos_sensor_byte(0x0000) << 8) | read_cmos_sensor_byte(0x0001)  )+1 );// 30c8+1 =0x30c9
 }
 
 /*************************************************************************
@@ -1492,13 +1479,13 @@ static kal_uint32 return_sensor_id(void)
 *
 *************************************************************************/
 //pxs-add 20161116
-int MCNX_MID=0xa0 ;
+int ZK_MID=0x23 ;   //zhongkeyuanda  zkyd
 static kal_uint16 S5K3L8_read_MID(void )
 {
 	kal_uint16 temp[2];
-	temp[0] = (read_cmos_sensor_byte2(0x0002) << 8) | read_cmos_sensor_byte2(0x0001);  //
-	temp[1] = read_cmos_sensor_byte2(0x03); // lens id
-	LOG_INF("pxs_mcnx MID = %x  , lens ID =%x \n " , temp[0], temp[1] );	
+	temp[0] = read_cmos_sensor_byte2(0x0001);  //  addr 0x0001 ,data 0x23 ;EEPROM data
+	temp[1] = read_cmos_sensor_byte2(0x0002); // lens id
+	LOG_INF("pxs_zkyd MID = %x  , lens ID =%x \n " , temp[0], temp[1] );	
 	return temp[0];
 }
 
@@ -1507,19 +1494,19 @@ static kal_uint16 S5K3L8GetMID(kal_uint16 *sensorID)
 {
     kal_uint16 ret=0;
     
-	LOG_INF("pxs_mcnx   enterMID S5K3L8GetMID function\n");
+	LOG_INF("pxs_zkyd   enterMID S5K3L8GetMID function\n");
   
-      if((ret=S5K3L8_read_MID())==MCNX_MID )  //mcnx mid =0x31  ; 0xa0
+      if((ret=S5K3L8_read_MID())==ZK_MID )  //mcnx mid =0x23
       {
-      	 	LOG_INF("pxs_mcnx =%x",ret);
+      	 	LOG_INF("pxs_zkyd =%x",ret);
 
-      	 *sensorID = S5K3L8_SENSOR_ID ;// 0x30c8;  //
+      	 *sensorID = S5K3L8_SENSOR_ID_ZK ;// 0x30c8+1;  //
       }else
 	  {
 	     *sensorID = 0xFFFF;
 	     return ERROR_SENSOR_CONNECT_FAIL;
 	  }
-	   LOG_INF("pxs_mcnx sensorID=0x%x  S5K3L8GetMID  function\n",*sensorID);
+	   LOG_INF("pxs_zkyd sensorID=0x%x  S5K3L8GetMID  function\n",*sensorID);
 	   
 	  
     return ERROR_NONE;
@@ -1537,9 +1524,9 @@ static kal_uint32 get_imgsensor_id(UINT32 *sensor_id)
         imgsensor.i2c_write_id = imgsensor_info.i2c_addr_table[i];
         spin_unlock(&imgsensor_drv_lock);
         do {
-            *sensor_id = return_sensor_id();
+            *sensor_id = return_sensor_id();  // 0x30c8 +1 
             if (*sensor_id == imgsensor_info.sensor_id) {
-				LOG_INF("pxs_mcnx i2c write id: 0x%x, ReadOut sensor id: 0x%x, imgsensor_info.sensor_id:0x%x.\n", imgsensor.i2c_write_id,*sensor_id,imgsensor_info.sensor_id);
+				LOG_INF("pxs_zkyd i2c write id: 0x%x, ReadOut sensor id: 0x%x, imgsensor_info.sensor_id:0x%x.\n", imgsensor.i2c_write_id,*sensor_id,imgsensor_info.sensor_id);
 				if(is_RWB_sensor()==0x1){
 					imgsensor_info.sensor_output_dataformat = SENSOR_OUTPUT_FORMAT_RAW_RWB_Wr;
 					LOG_INF("RWB sensor of S5k3L8\n");
@@ -1547,7 +1534,7 @@ static kal_uint32 get_imgsensor_id(UINT32 *sensor_id)
 			//	return ERROR_NONE;
 				break;//pxs-add 20161116
             }
-			LOG_INF("pxs_mcnx Read sensor id fail, i2c write id: 0x%x, ReadOut sensor id: 0x%x, imgsensor_info.sensor_id:0x%x.\n", imgsensor.i2c_write_id,*sensor_id,imgsensor_info.sensor_id);
+			LOG_INF("pxs_zkyd Read sensor id fail, i2c write id: 0x%x, ReadOut sensor id: 0x%x, imgsensor_info.sensor_id:0x%x.\n", imgsensor.i2c_write_id,*sensor_id,imgsensor_info.sensor_id);
             retry--;
         } while(retry > 0);
         i++;
@@ -1560,16 +1547,16 @@ static kal_uint32 get_imgsensor_id(UINT32 *sensor_id)
     }
 	
 	S5K3L8GetMID(&moudule_id );	
-	if(moudule_id== S5K3L8_SENSOR_ID ){
-	   		LOG_INF("pxs_mcnx success!\n");
-	       *sensor_id = S5K3L8_SENSOR_ID;    
+	if(moudule_id== S5K3L8_SENSOR_ID_ZK ){
+	   		LOG_INF("pxs_zkyd success!\n");
+	       *sensor_id = S5K3L8_SENSOR_ID_ZK;    
 	   }
 	   else{
 			*sensor_id = 0xFFFFFFFF; 
             return ERROR_SENSOR_CONNECT_FAIL; 
 	   }
   
-	   LOG_INF("pxs_mcnx  sensor_id==%x get_imgsensor_id function\n", *sensor_id);
+	   LOG_INF("pxs_zkyd  sensor_id==%x get_imgsensor_id function\n", *sensor_id);
 	
 	
     return ERROR_NONE;
@@ -1607,10 +1594,10 @@ static kal_uint32 open(void)
         do {
             sensor_id = return_sensor_id();
             if (sensor_id == imgsensor_info.sensor_id) {
-                LOG_INF("pxs_mcnx i2c write id: 0x%x, sensor id: 0x%x\n", imgsensor.i2c_write_id,sensor_id);
+                LOG_INF("pxs_zkyd i2c write id: 0x%x, sensor id: 0x%x\n", imgsensor.i2c_write_id,sensor_id);
                 break;
             }
-            LOG_INF("pxs_mcnx Read sensor id fail, id: 0x%x, sensor id: 0x%x\n", imgsensor.i2c_write_id,sensor_id);
+            LOG_INF("pxs_zkyd Read sensor id fail, id: 0x%x, sensor id: 0x%x\n", imgsensor.i2c_write_id,sensor_id);
             retry--;
         } while(retry > 0);
         i++;
@@ -2565,7 +2552,7 @@ static kal_uint32 feature_control(MSDK_SENSOR_FEATURE_ENUM feature_id,
 			break;
 		case SENSOR_FEATURE_GET_PDAF_DATA:
 			LOG_INF("SENSOR_FEATURE_GET_PDAF_DATA\n");
-			S5K3L8_read_eeprom((kal_uint16 )(*feature_data),(char*)(uintptr_t)(*(feature_data+1)),(kal_uint32)(*(feature_data+2)));
+			S5K3L8_read_eeprom_zk((kal_uint16 )(*feature_data),(char*)(uintptr_t)(*(feature_data+1)),(kal_uint32)(*(feature_data+2)));
 			break;
         /******************** PDAF END   <<< *********/
         default:
@@ -2586,7 +2573,7 @@ static SENSOR_FUNCTION_STRUCT sensor_func = {
 };
 
 
-UINT32 S5K3L8_MIPI_RAW_SensorInit(PSENSOR_FUNCTION_STRUCT *pfFunc)
+UINT32 S5K3L8_MIPI_RAW_SensorInit_ZK(PSENSOR_FUNCTION_STRUCT *pfFunc)
 {
 	/* To Do : Check Sensor status here */
 	if (pfFunc!=NULL)
