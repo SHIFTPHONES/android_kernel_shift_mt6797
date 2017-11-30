@@ -55,10 +55,10 @@
 #define CAM_CAL_I2C_DEV3_NAME "CAM_CAL_DEV3"
 #define CAM_CAL_I2C_DEV4_NAME "CAM_CAL_DEV4"
 
-static struct i2c_board_info i2cDev1 = { I2C_BOARD_INFO(CAM_CAL_I2C_DEV1_NAME, 0xA2 >> 1)};
-static struct i2c_board_info i2cDev2 = { I2C_BOARD_INFO(CAM_CAL_I2C_DEV2_NAME, 0xA2 >> 1)};
-static struct i2c_board_info i2cDev3 = { I2C_BOARD_INFO(CAM_CAL_I2C_DEV3_NAME, 0xA2 >> 1)};
-static struct i2c_board_info i2cDev4 = { I2C_BOARD_INFO(CAM_CAL_I2C_DEV4_NAME, 0xA2 >> 1)};
+static struct i2c_board_info i2cDev1 = { I2C_BOARD_INFO(CAM_CAL_I2C_DEV1_NAME, 0xA0 >> 1)};
+static struct i2c_board_info i2cDev2 = { I2C_BOARD_INFO(CAM_CAL_I2C_DEV2_NAME, 0xA0 >> 1)};
+static struct i2c_board_info i2cDev3 = { I2C_BOARD_INFO(CAM_CAL_I2C_DEV3_NAME, 0xA0 >> 1)};
+static struct i2c_board_info i2cDev4 = { I2C_BOARD_INFO(CAM_CAL_I2C_DEV4_NAME, 0xA0 >> 1)};
 
 static dev_t g_devNum = MKDEV(CAM_CAL_DEV_MAJOR_NUMBER, 0);
 static struct cdev *g_charDrv;

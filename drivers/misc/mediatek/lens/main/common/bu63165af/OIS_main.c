@@ -1,18 +1,17 @@
-/*
-* Copyright (C) Rohm Co.,Ltd. All rights reserved.
+/* /////////////////////////////////////////////////////////////////////////// */
+/* File Name    : OIS_main.c */
+/* Function             : Main control function runnning on ISP. */
+/* ( But Just for example ) */
+/* Rule         : Use TAB 4 */
+/*  */
+/* Copyright(c) Rohm Co.,Ltd. All rights reserved */
+/*  */
+/***** ROHM Confidential ***************************************************/
+#ifndef OIS_MAIN_C
+#define OIS_MAIN_C
+#endif
 
-* This software is licensed under the terms of the GNU General Public
-* License version 2, as published by the Free Software Foundation, and
-* may be copied, distributed, and modified under those terms.
-*
-* This program is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*/
-
-
-/* #define OIS_DEBUG */
+/*#define OIS_DEBUG */
 #ifdef OIS_DEBUG
 #include <linux/delay.h>
 #include <linux/uaccess.h>
@@ -22,74 +21,6 @@
 /* #include <stdio.h> */
 #include "OIS_head.h"
 
-const struct _FACT_ADJ FADJ_DEF
-= {
-	0x0200,			/* gl_CURDAT; */
-	0x0200,			/* gl_HALOFS_X; */
-	0x0200,			/* gl_HALOFS_Y; */
-	0x0000,			/* gl_HX_OFS; */
-	0x0000,			/* gl_HY_OFS; */
-	0x0080,			/* gl_PSTXOF;           RHM_HT 2013.03.21       Change order to adjust EEP ROM map */
-	0x0080,			/* gl_PSTYOF;           RHM_HT 2013.03.21       Change order to adjust EEP ROM map */
-	0x0000,			/* gl_GX_OFS; */
-	0x0000,			/* gl_GY_OFS; */
-
-	0x2000,			/* gl_KgxHG ;           RHM_HT 2013/11/25       Modified */
-	0x2000,			/* gl_KgyHG ;           RHM_HT 2013/11/25       Modified */
-	0x2000,			/* gl_KGXG  ;           RHM_HT 2013/11/25       Modified */
-	0x2000,			/* gl_KGYG  ;           RHM_HT 2013/11/25       Modified */
-	0x0200,			/* gl_SFTHAL_X;         RHM_HT 2013/11/25       Added */
-	0x0200,			/* gl_SFTHAL_Y;         RHM_HT 2013/11/25       Added */
-	0x0000,			/* gl_TMP_X_;           RHM_HT 2013/11/25       Added */
-	0x0000,			/* gl_TMP_Y_;           RHM_HT 2013/11/25       Added */
-	0x0000,			/* gl_KgxH0;            RHM_HT 2013/11/25       Added */
-	0x0000,			/* gl_KgyH0;            RHM_HT 2013/11/25       Added */
-}
-;
-
-/* FACTORY Adjusted data */
-/* These data are stored at the non-vollatile */
-/* memory inside of the CMOS sensor. */
-/* The Host ( ISP or I2C master ) read these */
-/* data from above memory and write to the OIS */
-/* controller. */
-/* --------------------------------------------- */
-struct _FACT_ADJ FADJ_MEM
-= {
-	0x0201,			/* gl_CURDAT; */
-	0x0200,			/* gl_HALOFS_X; */
-	0x0200,			/* gl_HALOFS_Y; */
-	0x0000,			/* gl_HX_OFS; */
-	0x0000,			/* gl_HY_OFS; */
-	0x0080,			/* gl_PSTXOF;           RHM_HT 2013.03.21       Change order to adjust EEP ROM map */
-	0x0080,			/* gl_PSTYOF;           RHM_HT 2013.03.21       Change order to adjust EEP ROM map */
-	0x0000,			/* gl_GX_OFS; */
-	0x0000,			/* gl_GY_OFS; */
-
-	0x2000,			/* gl_KgxHG ;           RHM_HT 2013/11/25       Modified */
-	0x2000,			/* gl_KgyHG ;           RHM_HT 2013/11/25       Modified */
-	0x2000,			/* gl_KGXG  ;           RHM_HT 2013/11/25       Modified */
-	0x2000,			/* gl_KGYG  ;           RHM_HT 2013/11/25       Modified */
-	0x0200,			/* gl_SFTHAL_X;         RHM_HT 2013/11/25       Added */
-	0x0200,			/* gl_SFTHAL_Y;         RHM_HT 2013/11/25       Added */
-	0x0000,			/* gl_TMP_X_;           RHM_HT 2013/11/25       Added */
-	0x0000,			/* gl_TMP_Y_;           RHM_HT 2013/11/25       Added */
-	0x0000,			/* gl_KgxH0;            RHM_HT 2013/11/25       Added */
-	0x0000,			/* gl_KgyH0;            RHM_HT 2013/11/25       Added */
-}
-;
-
-/* Parameters for expanding OIS range */
-/* --------------------------------------------- */
-double p_x, q_x;
-double p_y, q_y;
-short int zero_X;
-short int zero_Y;
-short int PREOUT_X_P, PREOUT_X_N;
-short int PREOUT_Y_P, PREOUT_Y_N;
-double alfa_X, beta_X;
-double alfa_Y, beta_Y;
-
 #ifdef OIS_DEBUG
 #define OIS_DRVNAME "BU63165AF_OIS"
 #define LOG_INF(format, args...) pr_info(OIS_DRVNAME " [%s] " format, __func__, ##args)
@@ -97,7 +28,7 @@ double alfa_Y, beta_Y;
 
 /* GLOBAL variable ( Upper Level Host Set this Global variables ) */
 /* ////////////////////////////////////////////////////////////////////////////// */
-unsigned short int BOOT_MODE = _FACTORY_;
+OIS_UWORD BOOT_MODE = _FACTORY_;
 
 #define	AF_REQ			0x8000
 #define	SCENE_REQ_ON	0x4000
@@ -105,27 +36,30 @@ unsigned short int BOOT_MODE = _FACTORY_;
 #define	POWERDOWN		0x1000
 #define	INITIAL_VAL		0x0000
 
-unsigned short int OIS_SCENE = _SCENE_D_A_Y_1;
-unsigned short int OIS_REQUEST = INITIAL_VAL;	/* OIS control register. */
+OIS_UWORD OIS_SCENE = _SCENE_D_A_Y_1;
+OIS_UWORD OIS_REQUEST = INITIAL_VAL;	/* OIS control register. */
 
-/* ==> RHM_HT 2013.03.04        Change type (unsigned short int -> double) */
+/* ==> RHM_HT 2013.03.04        Change type (OIS_UWORD -> double) */
 double OIS_PIXEL[2];		/* Just Only use for factory adjustment. */
 /* <== RHM_HT 2013.03.04 */
-short int OIS_MAIN_STS = ADJ_ERR;
+ADJ_STS OIS_MAIN_STS = ADJ_ERR;
 
-static struct _FACT_ADJ fadj;
+static _FACT_ADJ fadj;
+//add 
+static _FACT_ADJ_AF fadj_af;
 
 void setOISMode(int Disable)
 {
 	if (Disable == 1)
-		func_SET_SCENE_PARAM_for_NewGYRO_Fil(_SCENE_SPORT_3, 0, 0, 0, &fadj);
+		func_SET_SCENE_PARAM_for_NewGYRO_Fil(_SCENE_SPORT_2, 0, 0, 0, &fadj);
 	else
-		func_SET_SCENE_PARAM_for_NewGYRO_Fil(_SCENE_SPORT_3, 1, 0, 0, &fadj);
+		func_SET_SCENE_PARAM_for_NewGYRO_Fil(_SCENE_SPORT_2, 1, 0, 0, &fadj);
 }
 
 int setVCMPos(unsigned short DAC_Val)
 {
-	I2C_OIS_F0123_wr_(0x90, 0x00, DAC_Val);	/* AF Control */
+//// open VCM 0x90   ////close VCM 0xD0
+	I2C_OIS_F0123_wr_(0xD0, 0x00, DAC_Val);	/* AF Control */
 
 	return 0;
 }
@@ -142,6 +76,16 @@ void OIS_Standby(void)
 	I2C_OIS_per_write(0x1B, 0x0B02);
 	I2C_OIS_per_write(0x1C, 0x0B02);
 
+///////////////////////////////////////add for test///////////////////
+	I2C_OIS_mem_write(0x7F, 0x0080);
+
+
+	I2C_OIS_per_write(0x18, 0x000F);
+	I2C_OIS_per_write(0x1B, 0x6B40);
+	I2C_OIS_per_write(0x1C, 0x6B40);
+
+///////////////////////////////////////add end////////////////////////
+
 	I2C_OIS_per_write(0x3D, 0x0000);
 	I2C_OIS_per_write(0x22, 0x0300);
 	I2C_OIS_per_write(0x59, 0x0000);
@@ -152,6 +96,9 @@ void OIS_Standby(void)
 /* ////////////////////////////////////////////////////////////////////////////// */
 void Main_OIS(void)
 {
+	u16 ReadData;
+//	OIS_UWORD	GYRSNS;
+
 	/* ------------------------------------------------------ */
 	/* Get Factory adjusted data */
 	/* ------------------------------------------------------ */
@@ -177,6 +124,47 @@ void Main_OIS(void)
 	LOG_INF("gl_TMP_Y_ = 0x%04X\n", fadj.gl_TMP_Y_);
 	LOG_INF("gl_KgxH0 = 0x%04X\n", fadj.gl_KgxH0);
 	LOG_INF("gl_KgyH0 = 0x%04X\n", fadj.gl_KgyH0);
+	#endif
+
+	////////////////add/////////////////////////////// 	
+
+//	GYRSNS = I2C_OIS_mem__read(_M_GYRSNS);
+
+//	LOG_INF("wujun Osi func_COEF_DOWNLOAD GYRSNS = 0x%0x \n",GYRSNS); //0x381d
+
+	
+//	_FACT_ADJ_AF  get_FADJ_AF_from_eeprom_memory()
+//{
+
+
+	s4EEPROM_ReadReg_BU63165AF(0x07A0, &ReadData); //
+	fadj_af.gl_CURDAZ= (OIS_UWORD) ReadData;
+
+	s4EEPROM_ReadReg_BU63165AF(0x07A2, &ReadData);
+	fadj_af.gl_HALOFS_Z= (OIS_UWORD) ReadData;
+
+	s4EEPROM_ReadReg_BU63165AF(0x07A4, &ReadData);
+	fadj_af.gl_PSTZOF= (OIS_UWORD) ReadData;
+
+	s4EEPROM_ReadReg_BU63165AF(0x07A6, &ReadData);
+	fadj_af.gl_P_M_HZOFS= (OIS_UWORD) ReadData;
+
+	s4EEPROM_ReadReg_BU63165AF(0x07A8, &ReadData);
+	fadj_af.gl_P_M_KzHG= (OIS_UWORD) ReadData;
+
+//	return FADJ_AF_MEM;
+//}
+
+
+
+	
+//	fadj_af = get_FADJ_AF_from_eeprom_memory(); 
+	#ifdef OIS_DEBUG
+	LOG_INF("gl_CURDAZ = 0x%04X\n", fadj_af.gl_CURDAZ);
+	LOG_INF("gl_HALOFS_Z = 0x%04X\n", fadj_af.gl_HALOFS_Z);
+	LOG_INF("gl_PSTZOF = 0x%04X\n", fadj_af.gl_PSTZOF);
+	LOG_INF("gl_P_M_HZOFS = 0x%04X\n", fadj_af.gl_P_M_HZOFS);
+	LOG_INF("gl_P_M_KzHG = 0x%04X\n", fadj_af.gl_P_M_KzHG);
 	#endif
 
 	/* ------------------------------------------------------ */
@@ -210,10 +198,13 @@ void Main_OIS(void)
 	/* ------------------------------------------------------ */
 	/* Set calibration data */
 	/* ------------------------------------------------------ */
+	//////////////////add////////////////////
+	SET_FADJ_PARAM_CLAF(&fadj_af);
+	
 	SET_FADJ_PARAM(&fadj);
 
 	/* ------------------------------------------------------ */
 	/* Set scene parameter for OIS */
 	/* ------------------------------------------------------ */
-	func_SET_SCENE_PARAM_for_NewGYRO_Fil(_SCENE_SPORT_3, 1, 0, 0, &fadj);
+	func_SET_SCENE_PARAM_for_NewGYRO_Fil(_SCENE_SPORT_2, 1, 0, 0, &fadj); //_SCENE_SPORT_3 _SCENE_TEST___
 }

@@ -17,11 +17,11 @@
 /*===FEATURE SWITH===*/
 
 /****************************Modify Following Strings for Debug****************************/
-#define PFX "S5K3L8PDAF"
+#define PFX "S5K3L8PDAF ZK"
 #define LOG_INF_NEW(format, args...)    pr_debug(PFX "[%s] " format, __FUNCTION__, ##args)
 #define LOG_INF_LOD(format, args...)    pr_debug(PFX,"[%s] " format, __FUNCTION__, ##args)
 #define LOG_INF LOG_INF_LOD
-#define LOG_1 LOG_INF("S5K3L8,MIPI 4LANE\n")
+#define LOG_1 LOG_INF("S5K3L8,MIPI 4LANE ZK\n")
 #define SENSORDB LOG_INF
 /****************************   Modify end    *******************************************/
 
@@ -46,7 +46,7 @@ extern int iMultiReadReg(u16 a_u2Addr , u8 * a_puBuff , u16 i2cId, u8 number);
 #define MAX_OFFSET		    0xFFFF
 #define DATA_SIZE         1404
 #define START_ADDR        0X0763
-BYTE S5K3L8_eeprom_data[DATA_SIZE]= {0};
+BYTE S5K3L8_eeprom_data2[DATA_SIZE]= {0};
 
 /**************  CONFIG BY SENSOR <<< ************/
 
@@ -97,27 +97,28 @@ static bool _read_eeprom(kal_uint16 addr, kal_uint32 size ){
   for(; i<size; i++){
   	//add by jun 
   	
-  	if((addr+i) >= 0x96A){
-			j = (i+2);
-	//		printk("wujun-otp >>>>>>>= 0x96A      addr = 0x%x  i=%d    j=%d\n",addr, i,j);
+  	if((addr+i) >= 0x19F1){ // 0x19F1 - 0x1D7C ; 908 bytes
+	//		j = (i+2);      // mcnx need to move 2 byte;
+			j=i;            // zkyd no need to move 
+//			printk("wujun-otp >>>>>>>= 0x19F1      addr = 0x%x  i=%d    j=%d\n",addr, i,j);
   		}
 	else{
 			j = i;
-	//		printk("wujun-otp <<<<<<< 0x96A       addr = 0x%x  i=%d    j=%d\n",addr, i,j);
+//			printk("wujun-otp <<<<<<< 0x19F1       addr = 0x%x  i=%d    j=%d\n",addr, i,j);
 		}
 	
 
-//	printk("wujun addr+j = 0x%x \n",(addr+j));
-	S5K3L8_eeprom_data[i] = read_cmos_sensor_byte(addr+j);
+//	printk("wujun-otp addr+j = 0x%x \n",(addr+j));
+	S5K3L8_eeprom_data2[i] = read_cmos_sensor_byte(addr+j);
 	
-//    S5K3L8_eeprom_data[i] = read_cmos_sensor_byte(addr+i);
-//    printk("wujun-otp S5K3L8_read_eeprom addr = %d, \tvalue = 0x%x \n",i, S5K3L8_eeprom_data[i]);
+//    S5K3L8_eeprom_data2[i] = read_cmos_sensor_byte(addr+i);
+//      printk("wujun-otp S5K3L8_read_eeprom addr = %d, \tvalue = 0x%x \n",i, S5K3L8_eeprom_data2[i]);
   }
   return true;
 }
 
-bool S5K3L8_read_eeprom( kal_uint16 addr, BYTE* data, kal_uint32 size){
-	addr = 0x77A; //START_ADDR
+bool S5K3L8_read_eeprom_zk( kal_uint16 addr, BYTE* data, kal_uint32 size){
+	addr = 0x1801; //START_ADDR
 	size = DATA_SIZE;
 
 	//LOG_INF("Read EEPROM, addr = 0x%x, size = 0d%d\n", addr, size);
@@ -127,7 +128,7 @@ bool S5K3L8_read_eeprom( kal_uint16 addr, BYTE* data, kal_uint32 size){
 	return false;
 	}
 
-	memcpy(data, S5K3L8_eeprom_data, size);
+	memcpy(data, S5K3L8_eeprom_data2, size);
 	return true;
 }
 

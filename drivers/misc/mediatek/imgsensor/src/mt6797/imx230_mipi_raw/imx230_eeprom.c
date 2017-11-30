@@ -1,16 +1,3 @@
-/*
- * Copyright (C) 2016 MediaTek Inc.
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2 as
- * published by the Free Software Foundation.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- * See http://www.gnu.org/licenses/gpl-2.0.html for more details.
- */
-
 #include <linux/videodev2.h>
 #include <linux/i2c.h>
 #include <linux/platform_device.h>
@@ -47,7 +34,9 @@ extern int iMultiReadReg(u16 a_u2Addr , u8 * a_puBuff , u16 i2cId, u8 number);
 
 BYTE IMX230_DCC_data[96]= {0};
 BYTE IMX230_SPC_data[352]= {0};
-
+//BYTE IMX230_LSC_data[704]= {0}; //[SONY]OTP_TBD
+//BYTE IMX230_AWB_data[8]= {0}; //[SONY]OTP_TBD
+//BYTE IMX230_INF_data[6]= {0}; //[SONY]OTP_TBD
 
 static bool get_done = false;
 static int last_size = 0;
@@ -84,19 +73,24 @@ static bool _read_imx230_eeprom(kal_uint16 addr, BYTE* data, int size ){
 
 void read_imx230_SPC(BYTE* data){
 
-	//int addr = 0x2E8;
+	int addr = 0x0901;//0x2E8; //jun modify
 	int size = 352;
-
-	LOG_INF("read imx230 SPC, size = %d\n", size);
-#if 0
+ //   int i;
+	LOG_INF("[SONY]read imx230 SPC, size = %d\n", size);
+#if 1
 	if(!get_done || last_size != size || last_offset != addr) {
 		if(!_read_imx230_eeprom(addr, IMX230_SPC_data, size)){
 			get_done = 0;
             last_size = 0;
             last_offset = 0;
-			return false;
+		//	return false; //jun open
 		}
 	}
+//if 1
+//	for(i=0;i<352;i++)
+//	{
+//		printk("[SONY]SPC[%d]= %x   \n", i , IMX230_SPC_data[i]);
+ //   }
 #endif
 	memcpy(data, IMX230_SPC_data , size);
     //return true;
@@ -104,11 +98,11 @@ void read_imx230_SPC(BYTE* data){
 
 
 void read_imx230_DCC( kal_uint16 addr,BYTE* data, kal_uint32 size){
-	//int i;
-	addr = 0x448;
+//	int i;
+	addr = 0x0A63;//0x448; //jun modify 
 	size = 96;
 
-	LOG_INF("read imx230 DCC, size = %d\n", size);
+	LOG_INF("[SONY]read imx230 DCC, size = %d\n", size);
 
 	if(!get_done || last_size != size || last_offset != addr) {
 		if(!_read_imx230_eeprom(addr, IMX230_DCC_data, size)){
@@ -118,9 +112,15 @@ void read_imx230_DCC( kal_uint16 addr,BYTE* data, kal_uint32 size){
 			//return false;
 		}
 	}
-
+#if 0
+//	for(i=0;i<96;i++)
+//	{
+//		printk("[SONY]DCC[%d]= %x   ", i , IMX230_DCC_data[i]);
+//		if(i == 10)
+//			printk("\n");
+//	}
+#endif
 	memcpy(data, IMX230_DCC_data , size);
     //return true;
 }
-
 

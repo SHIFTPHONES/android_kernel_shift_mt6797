@@ -109,6 +109,7 @@ u32 pinSet[3][8] = {
 
 
 PowerCust PowerCustList = {
+	#if 0
 	{
 	 {GPIO_SUPPORTED, GPIO_MODE_GPIO, Vol_High},	/* for AVDD; */
 	 {GPIO_SUPPORTED, GPIO_MODE_GPIO, Vol_High},	/* for DVDD; */
@@ -122,6 +123,23 @@ PowerCust PowerCustList = {
 	 {GPIO_UNSUPPORTED, GPIO_MODE_GPIO, Vol_High},	/* for MAIN2_DOVDD; */
 /* {GPIO_SUPPORTED, GPIO_MODE_GPIO, Vol_Low}, */
 	 }
+	 #else
+	 {
+	 {GPIO_SUPPORTED, GPIO_MODE_GPIO, Vol_High},	/* for AVDD; */
+	 {GPIO_UNSUPPORTED, GPIO_MODE_GPIO, Vol_Low},	/* for DVDD; */
+	 {GPIO_UNSUPPORTED, GPIO_MODE_GPIO, Vol_Low},	/* for DOVDD; */
+	 {GPIO_UNSUPPORTED, GPIO_MODE_GPIO, Vol_Low},	/* for AFVDD; */
+	 {GPIO_SUPPORTED, GPIO_MODE_GPIO, Vol_High},	/* for SUB_AVDD; */
+	 {GPIO_UNSUPPORTED, GPIO_MODE_GPIO, Vol_Low},	/* for SUB_DVDD; */
+	 {GPIO_UNSUPPORTED, GPIO_MODE_GPIO, Vol_High},	/* for SUB_DOVDD; */
+	 {GPIO_SUPPORTED, GPIO_MODE_GPIO, Vol_High},	/* for MAIN2_AVDD; */
+	 {GPIO_SUPPORTED, GPIO_MODE_GPIO, Vol_High},	/* for MAIN2_DVDD; */
+	 {GPIO_UNSUPPORTED, GPIO_MODE_GPIO, Vol_High},	/* for MAIN2_DOVDD; */
+/* {GPIO_SUPPORTED, GPIO_MODE_GPIO, Vol_Low}, */
+	 }
+	 
+	 
+	 #endif 
 };
 
 
@@ -205,6 +223,8 @@ PowerUp PowerOnList = {
 	   },
 	  },
 #endif
+  
+	 
 #if defined(S5K5E2YA_MIPI_RAW)
 	 {SENSOR_DRVNAME_S5K5E2YA_MIPI_RAW,
 	  {
@@ -355,6 +375,7 @@ PowerUp PowerOnList = {
 	   },
 	  },
 #endif
+
 #if defined(S5K3L8_MIPI_RAW)
 	  {SENSOR_DRVNAME_S5K3L8_MIPI_RAW,
 	  {
@@ -370,6 +391,23 @@ PowerUp PowerOnList = {
 	   },
 	  },
 #endif
+//pxs_add 
+#if defined(S5K3L8_MIPI_RAW_ZK)
+	   {SENSOR_DRVNAME_S5K3L8_MIPI_RAW_ZK,
+	  {
+	  {SensorMCLK, Vol_High, 0},
+	  {PDN, Vol_Low, 4},
+	  {RST, Vol_Low, 1},
+	  {AVDD, Vol_2800, 1},
+	  {DOVDD, Vol_1800, 1},
+	  {DVDD, Vol_1200, 5},
+	  {AFVDD, Vol_2800, 1},
+	  {PDN, Vol_High, 2},
+	  {RST, Vol_High, 20},
+	  },
+	 },	 
+#endif
+	 
 #if defined(IMX362_MIPI_RAW)
 	  {SENSOR_DRVNAME_IMX362_MIPI_RAW,
 	  {
@@ -526,6 +564,10 @@ struct pinctrl_state *cam_ldo_vcamio_h = NULL;/* for DOVDD */
 struct pinctrl_state *cam_ldo_vcamio_l = NULL;
 struct pinctrl_state *cam_ldo_vcamaf_h = NULL;/* for AFVDD */
 struct pinctrl_state *cam_ldo_vcamaf_l = NULL;
+
+struct pinctrl_state *cam_ldo_sub_vcama_h = NULL;/* for SUB_AVDD */   //pxs-avdd
+struct pinctrl_state *cam_ldo_sub_vcama_l = NULL;
+
 struct pinctrl_state *cam_ldo_sub_vcamd_h = NULL;/* for SUB_DVDD */
 struct pinctrl_state *cam_ldo_sub_vcamd_l = NULL;
 struct pinctrl_state *cam_ldo_main2_vcamd_h = NULL;/* for MAIN2_DVDD */
@@ -661,6 +703,18 @@ int mtkcam_gpio_init(struct platform_device *pdev)
 			PK_ERR("%s : pinctrl err, cam_ldo_vcamd_l\n", __func__);
 		}
 	}
+//pxs-avdd
+	cam_ldo_sub_vcama_h = pinctrl_lookup_state(camctrl, "cam_ldo_sub_vcama_1");
+	if (IS_ERR(cam_ldo_sub_vcama_h)) {
+		ret = PTR_ERR(cam_ldo_sub_vcama_h);
+		printk("%s : mtkcam_gpio_init  pinctrl err, cam_ldo_sub_vcama_h\n", __func__);
+	}
+
+	cam_ldo_sub_vcama_l = pinctrl_lookup_state(camctrl, "cam_ldo_sub_vcama_0");
+	if (IS_ERR(cam_ldo_sub_vcama_l)) {
+		ret = PTR_ERR(cam_ldo_sub_vcama_l);
+		printk("%s : mtkcam_gpio_init pxs-avdd pinctrl err, cam_ldo_sub_vcama_l\n", __func__);
+	}
 
 	return ret;
 }
@@ -768,7 +822,26 @@ int mtkcam_gpio_set(int PinIdx, int PwrType, int Val)
 		break;
 	case DOVDD:
 	case AFVDD:
-	case SUB_AVDD:
+	case SUB_AVDD:  //pxs-avdd
+		printk("pxs-avdd mtkcam_gpio_set  mAVDD_usercounter(%d)\n",mAVDD_usercounter);
+		if (Val == 0 && !IS_ERR(cam_ldo_sub_vcama_l)){
+			mAVDD_usercounter --;
+			if(mAVDD_usercounter <= 0)
+			{
+				if(mAVDD_usercounter < 0)
+					printk("pxs-avdd mtkcam_gpio_set Please check AVDD pin control\n");
+
+				mAVDD_usercounter = 0;
+				pinctrl_select_state(camctrl, cam_ldo_sub_vcama_l);
+			}
+			
+		}
+		else if (Val == 1 && !IS_ERR(cam_ldo_sub_vcama_h)){
+			mAVDD_usercounter ++;
+			pinctrl_select_state(camctrl, cam_ldo_sub_vcama_h);
+		}
+	break;
+		
 	case SUB_DVDD:
 	default:
 		PK_ERR("PwrType(%d) is invalid !!\n", PwrType);
@@ -803,7 +876,7 @@ BOOL hwpoweron(PowerInformation pwInfo, char *mode_name)
 				}
 			} else {
 				if (mtkcam_gpio_set(pinSetIdx, SUB_AVDD, PowerCustList.PowerCustInfo[CUST_SUB_AVDD].Voltage)) {
-						PK_ERR("[CAMERA CUST_AVDD] set gpio failed!!\n");
+						printk("pxs-avdd sub  [CAMERA CUST_AVDD] set gpio failed!!\n");
 				}
 			}
 		}
@@ -815,7 +888,7 @@ BOOL hwpoweron(PowerInformation pwInfo, char *mode_name)
 				}
 			} else {
 				if (mtkcam_gpio_set(pinSetIdx, AVDD, PowerCustList.PowerCustInfo[CUST_AVDD].Voltage)) {
-						PK_ERR("[CAMERA CUST_AVDD] set gpio failed!!\n");
+						printk("pxs-avdd main  [CAMERA CUST_AVDD] set gpio failed!!\n");
 				}
 			}
 		}
@@ -962,7 +1035,8 @@ BOOL hwpowerdown(PowerInformation pwInfo, char *mode_name)
 					return FALSE;
 				}
 			} else {
-				if (mtkcam_gpio_set(pinSetIdx, SUB_AVDD, 1-PowerCustList.PowerCustInfo[CUST_SUB_AVDD].Voltage)) {
+				if (mtkcam_gpio_set(pinSetIdx, SUB_AVDD, 1-PowerCustList.PowerCustInfo[CUST_SUB_AVDD].Voltage)||
+				(TRUE != _hwPowerDown(pwInfo.PowerType))  ) {
 						PK_ERR("[CAMERA CUST_AVDD] set gpio failed!!\n");
 				}
 			}
