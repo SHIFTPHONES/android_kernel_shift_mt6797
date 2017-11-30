@@ -446,6 +446,17 @@ static void mtk_enable_otg_mode(void)
 #if defined(CONFIG_MTK_BQ25898_DUAL_SUPPORT)
 	bq25898_otg_en(0x01);
 	bq25898_set_boost_ilim(0x01);
+//zfraddstart--
+#elif defined(CONFIG_MTK_BQ25896_SUPPORT)
+        bq25890_otg_en(0x01);
+        bq25890_set_boost_ilim(0x01);
+#elif defined(CONFIG_MTK_BQ24296_SUPPORT)	
+		bq24296_set_otg_config(0x1); //OTG
+		bq24296_set_boostv(0x7); //boost voltage 4.998V
+		bq24296_set_boost_lim(0x1); //1.5A on VBUS
+		bq24296_set_en_hiz(0x0);
+//zfraddend--
+	
 #else
 	set_chr_enable_otg(0x1);
 	set_chr_boost_current_limit(1500);
@@ -456,6 +467,13 @@ static void mtk_disable_otg_mode(void)
 {
 #if defined(CONFIG_MTK_BQ25898_DUAL_SUPPORT)
 	bq25898_otg_en(0x0);
+//zfradd start--
+#elif defined(CONFIG_MTK_BQ25896_SUPPORT)
+        bq25890_otg_en(0x0);
+	#elif defined(CONFIG_MTK_BQ24296_SUPPORT)
+		bq24296_set_otg_config(0);
+//zfraddend--
+
 #else
 	set_chr_enable_otg(0x0);
 #endif

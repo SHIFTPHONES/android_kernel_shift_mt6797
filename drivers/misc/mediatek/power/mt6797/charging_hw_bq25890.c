@@ -303,6 +303,11 @@ static int charging_hw_init(void *data)
 /*K.S. way here*/
 #endif
 #endif
+#if defined(CONFIG_SHIFT6M_PROJECT)//zfr0920
+	swch_en_gpio_set(1);
+#else
+	mt_set_gpio_dir((254 | 0x80000000), 1);
+#endif
 	return status;
 }
 
@@ -329,10 +334,18 @@ static int charging_enable(void *data)
 	unsigned int enable = *(unsigned int *) (data);
 
 	if (KAL_TRUE == enable) {
+#if defined(CONFIG_SHIFT6M_PROJECT)
+		//ljj add //zfr0920
+		swch_en_gpio_set(1);
+#endif
 		/* bq25890_config_interface(bq25890_CON3, 0x1, 0x1, 4); //enable charging */
 		bq25890_set_en_hiz(0x0);
 		bq25890_chg_en(enable);
 	} else {
+#if defined(CONFIG_SHIFT6M_PROJECT)
+		//ljj add //zfr0920
+		swch_en_gpio_set(0);
+#endif
 		/* bq25890_config_interface(bq25890_CON3, 0x0, 0x1, 4); //enable charging */
 		bq25890_chg_en(enable);
 		if (charging_get_error_state())
@@ -511,6 +524,8 @@ static int charging_get_charger_det_status(void *data)
 	*(kal_bool *) (data) = 1;
 	battery_log(BAT_LOG_CRTI, "chr exist for fpga\n");
 #else
+//8.0ori	*(kal_bool *) (data) = pmic_get_register_value(MT6351_PMIC_RGS_CHRDET);
+//shift6m 7.0	*(kal_bool *) (data) = pmic_get_register_value_nolock(MT6351_PMIC_RGS_CHRDET);
 	*(kal_bool *) (data) = pmic_get_register_value(MT6351_PMIC_RGS_CHRDET);
 #endif
 	return status;

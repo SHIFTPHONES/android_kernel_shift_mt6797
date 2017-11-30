@@ -212,9 +212,21 @@ signed int PMIC_IMM_GetCurrent(void)
 	ADC_I_SENSE = (isense * 3 * VOLTAGE_FULL_RANGE) / 32768;
 
 #if defined(CONFIG_MTK_SMART_BATTERY)
+#if defined(CONFIG_SHIFT6M_PROJECT)
+
+	ICharging =
+	    (ADC_BAT_SENSE - ADC_I_SENSE +
+	     g_I_SENSE_offset) * 1000 / batt_meter_cust_data.cust_r_sense;
+
+	//printk("[ljj Q2] ADC_BAT_SENSE[%d]-ADC_I_SENSE[%d] + g_I_SENSE_offset[%d]) * 1000 / CUST_R_SENSE[%d] = ICharging[%d]  \n",ADC_BAT_SENSE,ADC_I_SENSE,g_I_SENSE_offset,batt_meter_cust_data.cust_r_sense,ICharging);
+#else
 	ICharging =
 	    (ADC_I_SENSE - ADC_BAT_SENSE +
 	     g_I_SENSE_offset) * 1000 / batt_meter_cust_data.cust_r_sense;
+
+	//printk("[ljj default] ADC_I_SENSE[%d]-ADC_BAT_SENSE[%d] + g_I_SENSE_offset[%d]) * 1000 / CUST_R_SENSE[%d] = ICharging[%d]  \n",ADC_I_SENSE,ADC_BAT_SENSE,g_I_SENSE_offset,batt_meter_cust_data.cust_r_sense,ICharging);
+
+#endif
 #endif
 
 	mutex_unlock(&pmic_adc_mutex);

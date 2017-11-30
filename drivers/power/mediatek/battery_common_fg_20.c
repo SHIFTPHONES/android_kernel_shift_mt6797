@@ -3732,7 +3732,12 @@ static int __batt_init_cust_data_from_dt(void)
 	struct device_node *np;
 
 	/* check customer setting */
-	np = of_find_compatible_node(NULL, NULL, "mediatek,battery");
+	//np = of_find_compatible_node(NULL, NULL, "mediatek,battery");//ori
+#ifdef CONFIG_SHIFT6M_PROJECT  //zfr1024 here
+	np = of_find_compatible_node(NULL, NULL, "mediatek,bat_meter");//zfr1011 modify
+#else
+	np = of_find_compatible_node(NULL, NULL, "mediatek,battery");//ori
+#endif
 	if (!np) {
 		battery_log(BAT_LOG_CRTI, "Failed to find device-tree node: bat_comm\n");
 		return -ENODEV;
