@@ -673,8 +673,11 @@ void bq25890_pumpx_up(unsigned int val)
 	}
 
 	/* Input current limit = 500 mA, changes after PE+ detection */
-	bq25890_set_iinlim(0x08);
-
+#ifdef CONFIG_SHIFT6M_PROJECT  //zfr1024 here
+	bq25890_set_iinlim(0x14);//0x14 800ma. old is(0x08);500ma
+#else
+	bq25890_set_iinlim(0x08);//500ma
+#endif
 	/* CC mode current = 2048 mA */
 	bq25890_set_ichg(0x20);
 
@@ -1053,6 +1056,19 @@ static int bq25890_driver_probe(struct i2c_client *client, const struct i2c_devi
 	return 0;
 }
 
+#define CON9_BATFET_DIS_MASK 0x1
+#define CON9_BATFET_DIS_SHIFT 0x5
+
+/* For RT5735A SDA low workaround */
+void battery_disable_batfet(void)
+{
+	unsigned int ret = 0;
+
+	ret = bq25890_config_interface(bq25890_CON9, 1,
+			CON9_BATFET_DIS_MASK, CON9_BATFET_DIS_SHIFT);
+	pr_notice("battery_disable_batfet success");
+}
+
 /**********************************************************
   *
   *   [platform_driver API]
@@ -1130,6 +1146,75 @@ static struct platform_driver bq25890_user_space_driver = {
 		   },
 };
 
+#if defined(CONFIG_SHIFT6M_PROJECT)
+//ljj for Android M 6.0 PinCtrl zfr0920
+/*=======================================================================
+  * platform driver
+  *=======================================================================*/
+//struct platform_device *g_swcharger_plat_dev = NULL;
+struct pinctrl *swchctrl = NULL;
+struct pinctrl_state *swch_enable = NULL;
+struct pinctrl_state *swch_disable = NULL;
+
+static int swcharger_en_probe(struct platform_device *pdev)
+{
+    printk("[ljj]   swcharger_en_probe\n");
+    swchctrl = devm_pinctrl_get(&pdev->dev);
+    if (IS_ERR(swchctrl)) {
+        dev_err(&pdev->dev, "Cannot find swcharger pinctrl!");
+    }
+    
+    /*SWcharger EN Ping initialization*/
+    swch_enable = pinctrl_lookup_state(swchctrl, "pin_en0");//swcharger is low active
+    if (IS_ERR(swch_enable)) {
+        pr_debug("%s : pinctrl err, swch_enable\n", __func__);
+    }
+
+    swch_disable = pinctrl_lookup_state(swchctrl, "pin_en1");
+    if (IS_ERR(swch_disable)) {
+        pr_debug("%s : pinctrl err, swch_disable\n", __func__);
+    }
+    return 0;
+}
+static int swcharger_en_remove(struct platform_device *pdev)
+{
+    return 0;
+}
+int swch_en_gpio_set(int en)
+{
+    if(en)
+    {
+        pinctrl_select_state(swchctrl, swch_enable);    
+    }else{
+        pinctrl_select_state(swchctrl, swch_disable);   
+    }
+    printk("[ljj] swch en pin set to [%d]\n",en);
+    
+    return 0;
+}
+
+#ifdef CONFIG_OF
+static const struct of_device_id SWCHARGER_EN_of_ids[] = {
+    { .compatible = "mediatek,swcharger_en", },
+    {}
+};
+#endif
+
+static struct platform_driver SWcharger_Driver = {
+    .probe      = swcharger_en_probe,
+    .remove     = swcharger_en_remove,
+    //.suspend    = CAMERA_HW_suspend,
+    //.resume     = CAMERA_HW_resume,
+    .driver     = {
+        .name   = "swcharger",
+        .owner  = THIS_MODULE,
+#ifdef CONFIG_OF
+        .of_match_table = SWCHARGER_EN_of_ids,
+#endif
+    }
+};
+//ljj end zfr0920
+#endif
 #ifdef CONFIG_OF
 static const struct of_device_id bq25890_of_match[] = {
 	{.compatible = "mediatek,sw_charger"},
@@ -1184,7 +1269,14 @@ static int __init bq25890_init(void)
 			    ret);
 		return ret;
 	}
-
+#if defined(CONFIG_SHIFT6M_PROJECT)
+    //ljj for Android M 6.0 PinCtrl zfr0920
+    if (platform_driver_register(&SWcharger_Driver)) {
+        printk("[ljj]failed to register SWcharger driver\n");
+        return -ENODEV;
+    }
+//ljj end
+#endif
 	return 0;
 }
 

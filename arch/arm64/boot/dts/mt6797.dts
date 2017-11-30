@@ -1026,14 +1026,24 @@
 			usb_charger_current_unconfigured = <7000 >;	/* Unit: 0.01 mA */
 			usb_charger_current_configured = <50000 >;	/* Unit: 0.01 mA */
 			usb_charger_current = <50000 >;	/* Unit: 0.01 mA */
-			ac_charger_current = <80000 >;	/* Unit: 0.01 mA */
+			ac_charger_input_current= <210000 >;	/* Unit: 0.01 mA ori is none zfradd1011 */
+			ac_charger_current = <200000 >;	/* Unit: 0.01 mA ori is 80000*/
 			non_std_ac_charger_current = <50000 >;	/* Unit: 0.01 mA */
 			charging_host_charger_current = <65000 >;	/* Unit: 0.01 mA */
 			apple_0_5a_charger_current = <50000 >;	/* Unit: 0.01 mA */
 			apple_1_0a_charger_current = <65000 >;	/* Unit: 0.01 mA */
 			apple_2_1a_charger_current = <80000 >;	/* Unit: 0.01 mA */
+			mtk_pump_express_plus_support = <1 >;
+			ta_start_battery_soc = <1 >;
+			ta_stop_battery_soc = <95 >;
+			ta_ac_12v_input_current = <150000 >;
+			ta_ac_9v_input_current = <200000 >;
+			ta_ac_7v_input_current = <250000 >;
+			ta_ac_charging_current = <300000 >;
+			ta_9v_support = <1 >;
+			ta_12v_support = <1 >;
 			/* charger error check */
-			bat_low_temp_protect_enable = <0 >;
+			bat_low_temp_protect_enable = <1 >;
 			v_charger_enable = <0 >;	/* 1:on , 0:off */
 			v_charger_max = <6500 >;	/* unit: mV */
 			v_charger_min = <4400 >;
@@ -1043,7 +1053,7 @@
 			sync_to_real_tracking_time = <60 >;	/* Unit: second */
 			v_0percent_tracking = <3450 >;	/* Unit: mV */
 			/* High battery support */
-			high_battery_voltage_support = <0 >;
+			high_battery_voltage_support = <1 >;
 			/* cust_battery_meter.h */
 			/* ADC resistor  */
 			r_bat_sense = <4 >;
@@ -3973,7 +3983,7 @@
 		mtkfb: mtkfb@0 {
 			compatible = "mediatek,mtkfb";
 		};
-		
+		//mly add 
 		lcm_gpio: lcm_gpio@0 {
 			compatible = "mediatek,lcm_gpio";
 		};
@@ -4099,10 +4109,14 @@
 
 	};
 /*End of SOC*/
-/* lcm_enable */
+/* lcm_enable  sds*/
   lcm_power:lcm_power_pin {
    compatible = "mediatek,lcm_power";
   };
+/* Charger gpio en  by   zfr1126*/
+		swcharger:swcharger_en@0 {
+			compatible = "mediatek,swcharger_en";
+		};
 /* sensor part */
 	hwmsensor@0 {
 			compatible = "mediatek,hwmsensor";

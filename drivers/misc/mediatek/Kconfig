@@ -7,6 +7,9 @@ menuconfig MEDIATEK_SOLUTION
 
 if MEDIATEK_SOLUTION
 
+config SHIFT6M_PROJECT
+	bool "shift6m project definition"
+	default n
 config MTK_PLATFORM
 	string "MTK platform name"
 

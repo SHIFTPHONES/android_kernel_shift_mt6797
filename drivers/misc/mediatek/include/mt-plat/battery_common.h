@@ -329,7 +329,7 @@ extern kal_bool g_ftm_battery_flag;
 extern int charging_level_data[1];
 extern kal_bool g_call_state;
 extern kal_bool g_charging_full_reset_bat_meter;
-#if defined(CONFIG_MTK_PUMP_EXPRESS_SUPPORT)
+#if defined(CONFIG_MTK_PUMP_EXPRESS_SUPPORT) || defined(CONFIG_MTK_PUMP_EXPRESS_PLUS_SUPPORT)
 extern kal_bool ta_check_chr_type;
 extern kal_bool ta_cable_out_occur;
 extern kal_bool is_ta_connect;

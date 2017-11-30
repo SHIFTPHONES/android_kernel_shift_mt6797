@@ -433,6 +433,13 @@ _err:
 int mtk_pep_start_algorithm(void)
 {
 	int ret = 0, chr_volt;
+	//zfr1101adds---
+#ifdef CONFIG_SHIFT6M_PROJECT  //zfr1024 here
+	#if defined(TA_12V_SUPPORT)||defined(TA_9V_SUPPORT)
+		unsigned int chr_ovp_en;
+	#endif
+#endif
+	//zfr1101adde---
 
 	if (!mtk_chr_is_hv_charging_enable()) {
 		pr_info("%s: hv charging is disabled\n", __func__);
@@ -489,7 +496,11 @@ int mtk_pep_start_algorithm(void)
 			battery_log(BAT_LOG_CRTI,
 				"%s: failed, cannot increase to 9V\n",
 				__func__);
+#ifdef CONFIG_SHIFT6M_PROJECT  //zfr1024 
+			//zfr1101del goto _err;
+#else
 			goto _err;
+#endif
 		}
 
 		/* Successfully, increase to 9V */
@@ -503,7 +514,24 @@ int mtk_pep_start_algorithm(void)
 			battery_log(BAT_LOG_CRTI,
 				"%s: failed, cannot increase to 12V\n",
 				__func__);
+#ifdef CONFIG_SHIFT6M_PROJECT  //zfr1024 
+			//zfr1101del goto _err;
+			//zfr1101adds-------------------------------------
+			/*1. Enable PMIC VBUS OVP : VCDT */
+					chr_ovp_en = 0;
+					battery_charging_control(CHARGING_CMD_SET_VBUS_OVP_EN,
+								 &chr_ovp_en);
+
+					/*2. Reset BQ25896 VINDPM back to 8.1V */
+					/* vindpm = SWITCH_CHR_VINDPM_9V; */
+					/* battery_charging_control(CHARGING_CMD_SET_VINDPM, &vindpm); */
+
+					battery_log(BAT_LOG_CRTI,
+						    "[PE+]adaptor failed to output 12V, Please check adaptor.");
+			//zfr1101adde---------------------------------------------
+#else
 			goto _err;
+#endif
 		}
 
 		/* Successfully, increase to 12V */
