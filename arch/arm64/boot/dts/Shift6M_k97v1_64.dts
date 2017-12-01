@@ -945,12 +945,12 @@ status = "okay";
 	};
 
 	/* external amp support */
-	max98926L@31 {
+/*	max98926L@31 {
 		compatible = "maxim,max98926L";
 		vmon-slot-no = <1>;
 		imon-slot-no = <5>;
 		status = "ok";
-	};
+	};	*/
 };
 /* AUDIO end */
 
@@ -1792,6 +1792,39 @@ status = "okay";
 	};
 };
 /* lcm power gpio end */
+
+/*SPEAKER PA GPIO Start*/
+&pio {
+	speaker_pa_default: default {
+
+	};
+
+	speaker_pa_en_high: speaker_pa_en_high {
+		pins_cmd_dat {
+			pins = <PINMUX_GPIO247__FUNC_GPIO247>;
+			slew-rate = <1>;
+			output-high;
+		};
+	};
+
+	speaker_pa_en_low: speaker_pa_en_low {
+		pins_cmd_dat {
+			pins = <PINMUX_GPIO247__FUNC_GPIO247>;
+			slew-rate = <1>;
+			output-low;
+		};
+	};
+};
+
+&speaker_pa{
+	pinctrl-names = "default", "speaker_pa_en_high", "speaker_pa_en_low";
+	pinctrl-0 = <&speaker_pa_default>;
+	pinctrl-1 = <&speaker_pa_en_high>;
+	pinctrl-2 = <&speaker_pa_en_low>;
+        status = "okay";
+};
+/*SPEAKER PA GPIO End*/
+
 #include <Shift6M_k97v1_64/cust.dtsi>
 
 /* start sensor */
