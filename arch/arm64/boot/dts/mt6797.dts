@@ -3988,6 +3988,11 @@
 			compatible = "mediatek,lcm_gpio";
 		};
 
+       /* speaker pa by lcy*/
+                speaker_pa: speaker_pa@ {
+			compatible = "mediatek,speaker_pa";
+		};
+	/*add end lcy*/
 		fpc1145: fpc {
 			compatible = "mediatek,fpc1145";
 		};
