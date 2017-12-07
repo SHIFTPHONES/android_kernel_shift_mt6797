@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--dct_version="2.5" buid_sn="161102" dws_modification_time="11.27.2017.20:29:38"-->
+<!--dct_version="2.5" buid_sn="161102" dws_modification_time="12.07.2017.19:41:52"-->
 <dct_cfg>
     <general chip="MT6797">
         <proj>Shift6M_k97v1_64</proj>
@@ -894,7 +894,6 @@
                 <in>false</in>
                 <out>true</out>
                 <out_high>false</out_high>
-                <varName0>GPIO_NFC_EINT_PIN</varName0>
                 <smt>false</smt>
                 <ies>true</ies>
             </gpio57>
@@ -908,7 +907,6 @@
                 <in>true</in>
                 <out>false</out>
                 <out_high>false</out_high>
-                <varName0>GPIO_IRQ_NFC_PIN</varName0>
                 <smt>false</smt>
                 <ies>true</ies>
             </gpio58>
@@ -936,7 +934,6 @@
                 <in>false</in>
                 <out>true</out>
                 <out_high>true</out_high>
-                <varName0>GPIO_NFC_VENB_PIN</varName0>
                 <smt>false</smt>
                 <ies>true</ies>
             </gpio60>
@@ -1947,29 +1944,29 @@
             </gpio135>
             <gpio136>
                 <eint_mode>false</eint_mode>
-                <def_mode>1</def_mode>
-                <mode_arr>11000000</mode_arr>
-                <inpull_en>false</inpull_en>
-                <inpull_selhigh>false</inpull_selhigh>
-                <def_dir>OUT</def_dir>
-                <in>true</in>
-                <out>true</out>
-                <out_high>false</out_high>
-                <varName0>GPIO_MHL_I2S_OUT_CK_PIN</varName0>
-                <smt>false</smt>
-                <ies>false</ies>
-            </gpio136>
-            <gpio137>
-                <eint_mode>false</eint_mode>
                 <def_mode>0</def_mode>
-                <mode_arr>10000100</mode_arr>
+                <mode_arr>10000000</mode_arr>
                 <inpull_en>false</inpull_en>
                 <inpull_selhigh>false</inpull_selhigh>
                 <def_dir>IN</def_dir>
                 <in>true</in>
                 <out>true</out>
+                <out_high>true</out_high>
+                <varName0>GPIO_NFC_VENB_PIN</varName0>
+                <smt>false</smt>
+                <ies>true</ies>
+            </gpio136>
+            <gpio137>
+                <eint_mode>false</eint_mode>
+                <def_mode>0</def_mode>
+                <mode_arr>10000000</mode_arr>
+                <inpull_en>true</inpull_en>
+                <inpull_selhigh>false</inpull_selhigh>
+                <def_dir>IN</def_dir>
+                <in>true</in>
+                <out>false</out>
                 <out_high>false</out_high>
-                <varName0>GPIO_IRTX_OUT_PIN</varName0>
+                <varName0>GPIO_IRQ_NFC_PIN</varName0>
                 <smt>true</smt>
                 <ies>true</ies>
             </gpio137>
@@ -2004,16 +2001,16 @@
             <gpio140>
                 <eint_mode>false</eint_mode>
                 <def_mode>0</def_mode>
-                <mode_arr>11000000</mode_arr>
+                <mode_arr>10000000</mode_arr>
                 <inpull_en>false</inpull_en>
                 <inpull_selhigh>false</inpull_selhigh>
-                <def_dir>IN</def_dir>
-                <in>true</in>
+                <def_dir>OUT</def_dir>
+                <in>false</in>
                 <out>true</out>
                 <out_high>false</out_high>
-                <varName0>GPIO_MHL_EINT_PIN</varName0>
+                <varName0>GPIO_NFC_EINT_PIN</varName0>
                 <smt>false</smt>
-                <ies>false</ies>
+                <ies>true</ies>
             </gpio140>
             <gpio141>
                 <eint_mode>false</eint_mode>
