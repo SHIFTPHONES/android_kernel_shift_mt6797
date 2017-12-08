@@ -6,7 +6,7 @@
 #include <dt-bindings/mmc/mt6797-msdc.h>
 #include <dt-bindings/pinctrl/mt6797-pinfunc.h>
 #else
-#include "mt6797.dts"
+#include "Shift6M_mt6797.dts"
 #endif
 #include <dt-bindings/lcm/r63419_wqhd_truly_phantom_2k_cmd_ok_mt6797.dtsi>
 
