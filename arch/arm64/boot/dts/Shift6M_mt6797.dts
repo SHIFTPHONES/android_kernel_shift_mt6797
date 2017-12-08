@@ -4084,9 +4084,9 @@
 
 		nfc:nfcC@0 {
 			compatible = "mediatek,nfc-gpio-v2";
-			gpio-ven = <140>;
-			gpio-eint = <137>;
-			gpio-irq = <136>;
+			gpio-ven = <136>;
+			gpio-eint = <140>;
+			gpio-irq = <137>;
 		};
 
 		irq_nfc: irq_nfc1@ {
