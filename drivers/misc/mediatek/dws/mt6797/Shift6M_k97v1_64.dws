@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--dct_version="2.5" buid_sn="161102" dws_modification_time="12.07.2017.19:41:52"-->
+<!--dct_version="2.5" buid_sn="161102" dws_modification_time="12.08.2017.16:08:43"-->
 <dct_cfg>
     <general chip="MT6797">
         <proj>Shift6M_k97v1_64</proj>
@@ -111,13 +111,13 @@
                 <sensitive_level>Level</sensitive_level>
                 <debounce_en>Enable</debounce_en>
             </eint15>
-            <eint46>
-                <varName>IRQ_NFC</varName>
+            <eint92>
+                <varName>NFC</varName>
                 <debounce_time>0</debounce_time>
                 <polarity>High</polarity>
                 <sensitive_level>Level</sensitive_level>
                 <debounce_en>Disable</debounce_en>
-            </eint46>
+            </eint92>
             <eint104>
                 <varName>DSI_TE</varName>
                 <debounce_time>0</debounce_time>
