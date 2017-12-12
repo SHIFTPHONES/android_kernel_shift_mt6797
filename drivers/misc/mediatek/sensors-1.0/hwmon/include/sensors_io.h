@@ -134,6 +134,15 @@ struct SENSOR_DATA {
 #define ALSPS_GET_ALS_DATA				_IOR(ALSPS, 0x07, int)
 #define ALSPS_GET_ALS_RAW_DATA			_IOR(ALSPS, 0x08, int)
 
+/*--------------------simcom add-----------------------------------------*/
+//pei_add 20160802
+#define ALSPS_GET_PS_THD              			_IOR(ALSPS, 0x17, int)
+#define ALSPS_SET_PS_CALI  				_IOW(ALSPS, 0x18, int)
+#define ALSPS_GET_PS_RAW_DATA_FOR_CALI          	_IOR(ALSPS, 0x19, int)
+//#define ALSPS_GET_ALS_RAW_DATA_TO_LUX			_IOR(ALSPS, 0x17, int)//
+#define ALSPS_GET_ALS_RAW_DATA_TO_LUX			_IOR(ALSPS, 0x1A, int)
+/*-----------------------------------------------------------------------*/
+
 /*-------------------MTK add-------------------------------------------*/
 #define ALSPS_GET_PS_TEST_RESULT		_IOR(ALSPS, 0x09, int)
 #define ALSPS_GET_ALS_TEST_RESULT		_IOR(ALSPS, 0x0A, int)
