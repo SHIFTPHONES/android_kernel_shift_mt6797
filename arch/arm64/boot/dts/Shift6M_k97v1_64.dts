@@ -1333,35 +1333,70 @@ status = "okay";
 
 /* FLASHLIGHT GPIO standardization */
 &pio {
-	flashlight_pins_default: flashlight_default {
+	flashlight_pins_default: default {
 
 	};
 
 	flashlight_pins_hwen_high: hwen_high {
 
 	    pins_cmd_dat {
-			pins = <PINMUX_GPIO90__FUNC_GPIO90>;
+			pins = <PINMUX_GPIO59__FUNC_GPIO59>;
 			slew-rate = <1>;
 			output-high;
 		};
 	};
 
 	flashlight_pins_hwen_low: hwen_low {
-
 	    pins_cmd_dat {
-			pins = <PINMUX_GPIO90__FUNC_GPIO90>;
+			pins = <PINMUX_GPIO59__FUNC_GPIO59>;
+			slew-rate = <1>;
+			output-low;
+		};
+	};
+	
+	flashlight_pins_torch_high: torch_high {
+	    pins_cmd_dat {
+			pins = <PINMUX_GPIO43__FUNC_GPIO43>;
+			slew-rate = <1>;
+			output-high;
+		};
+	};
+	
+	flashlight_pins_torch_low: torch_low {
+	    pins_cmd_dat {
+			pins = <PINMUX_GPIO43__FUNC_GPIO43>;
+			slew-rate = <1>;
+			output-low;
+		};
+	};
+	flashlight_pins_flash_high: flash_high {
+	    pins_cmd_dat {
+			pins = <PINMUX_GPIO255__FUNC_GPIO255>;
+			slew-rate = <1>;
+			output-high;
+		};
+	};
+
+
+	flashlight_pins_flash_low: flash_low {
+	    pins_cmd_dat {
+			pins = <PINMUX_GPIO255__FUNC_GPIO255>;
 			slew-rate = <1>;
 			output-low;
 		};
 	};
 
 };
-
 &flashlight {
-	pinctrl-names = "default", "hwen_high", "hwen_low";
+	pinctrl-names = "default", "hwen_high", "hwen_low","torch_high", 
+	"torch_low","flash_high", "flash_low";
 	pinctrl-0 = <&flashlight_pins_default>;
 	pinctrl-1 = <&flashlight_pins_hwen_high>;
 	pinctrl-2 = <&flashlight_pins_hwen_low>;
+	pinctrl-3 = <&flashlight_pins_torch_high>;
+	pinctrl-4 = <&flashlight_pins_torch_low>;
+	pinctrl-5 = <&flashlight_pins_flash_high>;
+	pinctrl-6 = <&flashlight_pins_flash_low>;	
 	status = "okay";
 
 };
