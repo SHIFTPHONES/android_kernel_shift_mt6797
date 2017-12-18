@@ -3993,6 +3993,15 @@
 			compatible = "mediatek,speaker_pa";
 		};
 	/*add end lcy*/
+/*added for sar sensor*/
+	IRQ_SAR: sar@ {
+		compatible = "mediatek,SAR"; 
+	};
+	
+	sar_eint: sar_eint@{
+		compatible = "mediatek, IRQ_SAR-eint";
+	};
+/*end sar*/
 		fpc1145: fpc {
 			compatible = "mediatek,fpc1145";
 		};
