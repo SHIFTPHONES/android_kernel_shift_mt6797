@@ -76,6 +76,13 @@
                 <sensitive_level>Level</sensitive_level>
                 <debounce_en>Disable</debounce_en>
             </eint5>
+            <eint8>
+                <varName>SAR_EINT</varName>
+                <debounce_time>0</debounce_time>
+                <polarity>Low</polarity>
+                <sensitive_level>Level</sensitive_level>
+                <debounce_en>Disable</debounce_en>
+            </eint8>
             <eint9>
                 <varName>FPC1145</varName>
                 <debounce_time>0</debounce_time>
@@ -1262,6 +1269,7 @@
                 <in>true</in>
                 <out>false</out>
                 <out_high>false</out_high>
+                <varName0>GPIO_SAR_EINT_PIN</varName0>
                 <smt>true</smt>
                 <ies>true</ies>
             </gpio85>
