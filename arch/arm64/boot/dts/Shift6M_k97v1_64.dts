@@ -263,7 +263,13 @@
 
 	};
 };
+&als {
+	pinctrl-names = "pin_default", "pin_cfg";
+	pinctrl-0 = <&alsps_intpin_default>;
+	pinctrl-1 = <&alsps_intpin_cfg>;
+	status = "okay";
 
+};
 &gyro {
 	pinctrl-names = "pin_default", "pin_cfg";
 	pinctrl-0 = <&gyro_intpin_default>;
@@ -1846,7 +1852,7 @@ status = "okay";
 
 &barometer_mtk {
 	i2c_num					= <1>;
-	i2c_addr				= <0x77 0 0 0>;
+	i2c_addr				= <0x5C 0 0 0>;
 	direction				= <0>;
 	power_id				= <0xffff>;
 	power_vol				= <0>;

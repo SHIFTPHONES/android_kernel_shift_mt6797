@@ -5276,8 +5276,8 @@ static int stk3x1x_i2c_probe(struct i2c_client *client, const struct i2c_device_
 	atomic_set(&obj->als_suspend, 0);
 	atomic_set(&obj->init_done, 0);
 	//obj->irq_node = of_find_matching_node(obj->irq_node, alsps_of_match);
-	//obj->irq_node = of_find_compatible_node(NULL, NULL, "mediatek,als_ps");
-	obj->irq_node = of_find_compatible_node(NULL, NULL, "mediatek,alsps_mtk");
+	obj->irq_node = of_find_compatible_node(NULL, NULL, "mediatek,als_ps");
+	//obj->irq_node = of_find_compatible_node(NULL, NULL, "mediatek,alsps_mtk");
 	if (!obj->irq_node)
 		printk("[sensor slsps]%s obj->irq_node=NULL\n", __func__);
 	atomic_set(&obj->state_val, 0);

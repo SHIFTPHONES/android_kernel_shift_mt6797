@@ -1,0 +1,4 @@
+
+config MTK_LPS25HB
+	bool "LPS25HB for MediaTek package"
+	default n

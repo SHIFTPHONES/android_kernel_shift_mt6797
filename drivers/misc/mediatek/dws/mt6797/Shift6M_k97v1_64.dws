@@ -98,7 +98,7 @@
                 <debounce_en>Disable</debounce_en>
             </eint10>
             <eint11>
-                <varName>ALSPS_MTK</varName>
+                <varName>ALS</varName>
                 <debounce_time>0</debounce_time>
                 <polarity>Low</polarity>
                 <sensitive_level>Level</sensitive_level>
@@ -3738,7 +3738,7 @@
             <device9>
                 <varName>BAROMETER</varName>
                 <channel>I2C_CHANNEL_1</channel>
-                <address>0x77</address>
+                <address>0x5C</address>
             </device9>
             <device10>
                 <varName>ALSPS</varName>
