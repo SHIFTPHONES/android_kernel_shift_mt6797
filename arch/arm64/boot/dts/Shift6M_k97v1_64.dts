@@ -1339,7 +1339,7 @@ status = "okay";
 
 /* FLASHLIGHT GPIO standardization */
 &pio {
-	flashlight_pins_default: default {
+	flashlight_pins_default: flashlight_default {
 
 	};
 
