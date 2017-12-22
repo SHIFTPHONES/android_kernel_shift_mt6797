@@ -15,7 +15,7 @@ config MTK_FINGERPRINT_SUPPORT
 if MTK_FINGERPRINT_SUPPORT
 config MTK_FINGERPRINT_SELECT
 	string "sensor type"
-	default "GF318M"
+	default "GF3258"
 
 
 if MTK_FINGERPRINT_SELECT = "FPC1145"
@@ -26,16 +26,16 @@ config FPC_FINGERPRINT
 	FPC fingerprint FPC's 102x/104x device.
 endif
 
-if MTK_FINGERPRINT_SELECT = "GF318M"
+if MTK_FINGERPRINT_SELECT = "GF3258"
 config GOODIX_FINGERPRINT
-	bool "Goodix Fingerprint"
+	tristate "Goodix Fingerprint"
 	default y
 	---help---
 	Goodix Fingerprint chip GF316M/GF318M/GF3118M/GF518M/GF5118M/GF516M/GF816M/GF3208/GF5216 TEE driver
 
 config GOODIX_SENSOR_TYPE
 	string "SENSOR_TYPE"
-	default "GF318M"
+	default "GF3258"
 	---help---
 	Must input sensor type, or default is GF316M GF318M GF3118M GF518M GF5118M GF516M GF816M GF3208 GF5216
 endif
