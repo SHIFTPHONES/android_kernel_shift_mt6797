@@ -84,10 +84,10 @@
                 <debounce_en>Disable</debounce_en>
             </eint8>
             <eint9>
-                <varName>FPC1145</varName>
+                <varName>GOODIX_FP</varName>
                 <debounce_time>0</debounce_time>
-                <polarity>Low</polarity>
-                <sensitive_level>Level</sensitive_level>
+                <polarity>High</polarity>
+                <sensitive_level>Edge</sensitive_level>
                 <debounce_en>Disable</debounce_en>
             </eint9>
             <eint10>
@@ -743,6 +743,7 @@
                 <in>true</in>
                 <out>true</out>
                 <out_high>false</out_high>
+                <varName0>GPIO_FINGERPRINT_RST_PIN</varName0>
                 <smt>false</smt>
                 <ies>false</ies>
             </gpio45>
@@ -1277,7 +1278,7 @@
                 <eint_mode>false</eint_mode>
                 <def_mode>1</def_mode>
                 <mode_arr>11000000</mode_arr>
-                <inpull_en>true</inpull_en>
+                <inpull_en>false</inpull_en>
                 <inpull_selhigh>false</inpull_selhigh>
                 <def_dir>IN</def_dir>
                 <in>true</in>
