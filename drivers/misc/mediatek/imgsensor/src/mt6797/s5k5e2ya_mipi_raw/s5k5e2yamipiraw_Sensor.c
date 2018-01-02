@@ -137,7 +137,7 @@ static imgsensor_info_struct imgsensor_info = {
 		.mipi_data_lp2hs_settle_dc = 23,
 		.max_framerate = 300,
 	},
-	.margin = 4,
+	.margin = 0,
 	.min_shutter = 1,
 	.max_frame_length = 0xffff,
 	.ae_shut_delay_frame = 0,
