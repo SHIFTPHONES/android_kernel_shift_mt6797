@@ -30,7 +30,7 @@
 #define KTD_I2C_NAME			"ktd2037"
 #define DEV_NAME 		"ktd2037_dev"
 #define	CLASS_NAME		"ktd2037_class"
-#define MAJOR_DEV_NUM		252	//debug
+//#define MAJOR_DEV_NUM		252	//debug
 
 static struct class *ktd2037_class;
 
@@ -340,6 +340,7 @@ static int ktd2037_i2c_probe(struct i2c_client *client, const struct i2c_device_
 		printk("ktd2037_device register failed\n");
 		goto exit;
 	}	
+#if 0
 	ktd2037_class = class_create(THIS_MODULE, CLASS_NAME);
 	if (IS_ERR(ktd2037_class))
 	{
@@ -347,11 +348,13 @@ static int ktd2037_i2c_probe(struct i2c_client *client, const struct i2c_device_
 		goto exit0;
 	}
 	device_create(ktd2037_class, NULL, MKDEV(MAJOR_DEV_NUM, 0), NULL, DEV_NAME);
+#endif
 	printk("[mly]ktd2037 i2c_probe end!\n");
 	return err;
-
+#if 0
 exit0:
 	class_destroy(ktd2037_class);
+#endif
 exit:
 	if(obj)
 	{
