@@ -22,6 +22,18 @@ config TOUCHSCREEN_MTK
 	  To compile this dirver as a module, choose M here: the
 	  module will be called.
 
+source "drivers/input/touchscreen/mediatek/synaptics_dsx/Kconfig"
+
+config TOUCHSCREEN_SYNAPTICS_DSX
+	bool "SYNAPTICS for Mediatek package"
+	default n
+	help
+	  Say Y here if you have SYNAPTICS touch panel.
+
+	  If unsure, say N.
+
+	  To compile this dirver as a module, choose M here: the
+	  module will be called.
 source "drivers/input/touchscreen/mediatek/GT1151/Kconfig"
 
 
