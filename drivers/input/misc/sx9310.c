@@ -140,16 +140,48 @@ static int read_register(psx93XX_t this, u8 address, u8 *value)
 {
 	struct i2c_client *i2c = 0;
 	s32 returnValue = 0;
-
+//	s32 test = 0,i =0 ;//pxs_add
+	
 	if (this && value && this->bus) {
 		i2c = this->bus;
 		CAP_DBG("i2c->addr: 0x%x\n", i2c->addr);
 
-		returnValue = i2c_smbus_read_byte_data(i2c,address);
+		returnValue = i2c_smbus_read_byte_data(i2c,address);	
+		CAP_DBG("read_register Address: 0x%x Return: 0x%x\n",address,returnValue);
 		
-		CAP_DBG("read_register Address: 0x%x Return: 0x%x\n",
-				address,returnValue);
+#if 0 //pxs
+		i=0x00;	
+		test = i2c_smbus_read_byte_data(i2c,i);		
+			CAP_DBG("pxs_sx9310 read_register addr: 0x%x Return: 0x%x \n",i,test);//pxs_add	
+		i=0x01;
+		test = i2c_smbus_read_byte_data(i2c,i);		
+			CAP_DBG("pxs_sx9310 read_register addr: 0x%x Return: 0x%x \n",i,test);//pxs_add					
+		i=0x18;
+		test = i2c_smbus_read_byte_data(i2c,i);		
+			CAP_DBG("pxs_sx9310 read_register addr: 0x%x Return: 0x%x \n",i,test);//pxs_add			
+		i=0x19;
+		test = i2c_smbus_read_byte_data(i2c,i);		
+			CAP_DBG("pxs_sx9310 read_register addr: 0x%x Return: 0x%x \n",i,test);//pxs_add	
+		i=0x30;
+		test = i2c_smbus_read_byte_data(i2c,i);		
+			CAP_DBG("pxs_sx9310 read_register addr: 0x%x Return: 0x%x \n",i,test);//pxs_add				
+		i=0x35;
+		test = i2c_smbus_read_byte_data(i2c,i);		
+			CAP_DBG("pxs_sx9310 read_register addr: 0x%x Return: 0x%x \n",i,test);//pxs_add			
+		i=0x36;
+		test = i2c_smbus_read_byte_data(i2c,i);		
+			CAP_DBG("pxs_sx9310 read_register addr: 0x%x Return: 0x%x \n",i,test);//pxs_add	
+//#else
+	for(i = 0; i<=0x38 ; i ++)
+	{
+		test = i2c_smbus_read_byte_data(i2c,i);
+		CAP_DBG("pxs_sx9310 read_register addr: 0x%x Return: 0x%x \n",i,test);//pxs_add	
+	}
+			
+#endif
 
+
+						
 		if (returnValue >= 0) {
 			*value = returnValue;
 			return 0;
@@ -420,7 +452,12 @@ static void touchProcess(psx93XX_t this)
             /* User pressed button */
             dev_info(this->pdev, "cap button %d touched\n", counter);
             input_report_key(input, pCurrentButton->keycode, 1);
-            pCurrentButton->state = ACTIVE;
+
+			input_sync(input);
+			input_report_key(input, pCurrentButton->keycode, 0);
+			input_sync(input);
+			
+		    pCurrentButton->state = ACTIVE;	
           } else {
             CAP_DBG("Button %d already released.\n",counter);
           }
@@ -430,6 +467,10 @@ static void touchProcess(psx93XX_t this)
             /* User released button */
             CAP_LOG("cap button %d released\n",counter);
             input_report_key(input, pCurrentButton->keycode, 0);
+			input_sync(input);
+			input_report_key(input, pCurrentButton->keycode, 1);
+			input_sync(input);
+			
             pCurrentButton->state = IDLE;
           } else {
             CAP_DBG("Button %d still touched.\n",counter);
@@ -439,7 +480,7 @@ static void touchProcess(psx93XX_t this)
           break;
       };
     }
-    input_sync(input);
+    //input_sync(input);
 
 	CAP_DBG("Leaving touchProcess()\n");
   }
@@ -977,7 +1018,7 @@ void sx93XX_suspend(psx93XX_t this)
 {
 	if (this)
 		disable_irq(this->irq);
-	//write_register(this,sx9310_CTRL1_REG,0x20);//make sx9310 in Sleep mode
+	    write_register(this,sx9310_CPS_CTRL1_REG,0x20);//make sx9310 in Sleep mode pxs_add 20171027
 }
 
 void sx93XX_resume(psx93XX_t this)
