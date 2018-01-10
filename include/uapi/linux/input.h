@@ -661,6 +661,13 @@ struct input_keymap_entry {
 #define KEY_INS_LINE		0x1c2
 #define KEY_DEL_LINE		0x1c3
 
+//pxs_add SAR
+#define KEY_SAR0	0x1c4	 
+#define KEY_SAR1	0x1c5	 
+#define KEY_SAR2	0x1c6	 
+#define KEY_SAR3	0x1c7
+
+
 #define KEY_FN			0x1d0
 #define KEY_FN_ESC		0x1d1
 #define KEY_FN_F1		0x1d2
