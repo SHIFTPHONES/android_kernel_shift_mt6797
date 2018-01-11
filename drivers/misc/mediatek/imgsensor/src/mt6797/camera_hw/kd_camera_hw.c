@@ -29,7 +29,7 @@
 #include "kd_camera_hw.h"
 /******************************************************************************
  * Debug configuration
-******************************************************************************/
+ ******************************************************************************/
 #define PFX "[kd_camera_hw]"
 
 //#define DEBUG_CAMERA_HW_K
@@ -208,14 +208,14 @@ PowerUp PowerOnList = {
 #if defined(S5K5E2YA_MIPI_RAW)
 	 {SENSOR_DRVNAME_S5K5E2YA_MIPI_RAW,
 	  {
+	   {PDN, Vol_Low, 0},
+	   {RST, Vol_Low, 1},
+	   {SensorMCLK, Vol_High, 3},
+	   {DVDD, Vol_1200, 1},
 	   {DOVDD, Vol_1800, 1},
 	   {AVDD, Vol_2800, 1},
-	   {DVDD, Vol_1200, 1},
 	   {AFVDD, Vol_2800, 0},
-	   {SensorMCLK, Vol_High, 0},
-	   {PDN, Vol_Low, 1},
 	   {PDN, Vol_High, 0},
-	   {RST, Vol_Low, 1},
 	   {RST, Vol_High, 5},
 	   },
 	  },
