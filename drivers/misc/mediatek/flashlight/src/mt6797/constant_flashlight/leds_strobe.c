@@ -364,9 +364,13 @@ int setDuty_lm3643_1(int duty)
 {
 	int ret;
 	char buf[2];
-
+#if 0 //duty=0, i =47ma	
 	if (duty < 0)
 		duty = 0;
+#else //pxs_add 20180119,duty=1, i= 96ma
+	if (duty <=0)
+		duty = 1;
+#endif
 	else if (duty >= e_DutyNum)
 		duty = e_DutyNum-1;
 
@@ -385,9 +389,13 @@ int setDuty_lm3643_2(int duty)
 {
 	int ret;
 	char buf[2];
-
+#if 0 //duty=0, i =47ma	
 	if (duty < 0)
 		duty = 0;
+#else //pxs_add 20180119,duty=1, i= 96ma
+	if (duty <=0)
+		duty = 1;
+#endif
 	else if (duty >= e_DutyNum)
 		duty = e_DutyNum-1;
 
