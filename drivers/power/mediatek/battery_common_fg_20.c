@@ -2607,6 +2607,12 @@ void mt_battery_update_status(void)
 #endif
 }
 
+//zfradd0118s
+#ifdef CONFIG_SHIFT6M_PROJECT
+//ljj add for detecting the non-std as the low inserting speed
+static int g_non_std_chr_det = 0;
+#endif
+//zfradd0118e
 
 CHARGER_TYPE mt_charger_type_detection(void)
 {
@@ -2648,6 +2654,39 @@ CHARGER_TYPE mt_charger_type_detection(void)
 #endif
 #endif
 	}
+	//zfradd0118s
+#ifdef CONFIG_SHIFT6M_PROJECT
+		//ljj add for detecting the non-std as the low inserting speed
+	if (BMT_status.charger_type == NONSTANDARD_CHARGER)
+	{
+		battery_charging_control(CHARGING_CMD_GET_CHARGER_TYPE, &CHR_Type_num);
+		BMT_status.charger_type = CHR_Type_num;	
+		battery_log(BAT_LOG_CRTI, "[ljj-non]------g_non_std_chr_det = %d, CHR_Type_num = %d\r\n",
+			    g_non_std_chr_det,CHR_Type_num);	
+#if defined(CONFIG_MTK_KERNEL_POWER_OFF_CHARGING)
+#if defined(CONFIG_MTK_PUMP_EXPRESS_SUPPORT) || defined(CONFIG_MTK_PUMP_EXPRESS_PLUS_SUPPORT)
+		/*if (BMT_status.UI_SOC2 == 100) {
+			BMT_status.bat_charging_state = CHR_BATFULL;
+			BMT_status.bat_full = KAL_TRUE;
+			g_charging_full_reset_bat_meter = KAL_TRUE;
+		}*/
+
+		if (g_battery_soc_ready == KAL_FALSE) {
+			if (BMT_status.nPercent_ZCV == 0)
+				battery_meter_initial();
+
+			BMT_status.SOC = battery_meter_get_battery_percentage();
+		}
+
+		if (BMT_status.bat_vol > 0)
+			mt_battery_update_status();
+
+#endif
+#endif	
+//end ljj	
+	}
+#endif
+	//zfradd0118e
 #endif
 	mutex_unlock(&charger_type_mutex);
 
@@ -2714,6 +2753,20 @@ static void mt_battery_charger_detect_check(void)
 				mt_usb_connect();
 			}
 		}
+		//zfradd0118s
+#ifdef CONFIG_SHIFT6M_PROJECT
+		//ljj add for detecting the non-std as the low inserting speed 
+		if ((BMT_status.charger_type == NONSTANDARD_CHARGER)&&(g_non_std_chr_det < 6))//ingcluing about 30s slow inserting
+		{
+			g_non_std_chr_det++;
+			mt_charger_type_detection();
+			if ((BMT_status.charger_type == STANDARD_HOST)
+			    || (BMT_status.charger_type == CHARGING_HOST)) {
+				mt_usb_connect();
+			}
+		}
+#endif
+		//zfradd0118e
 #endif
 
 #ifdef CONFIG_MTK_BQ25896_SUPPORT
@@ -2746,6 +2799,12 @@ static void mt_battery_charger_detect_check(void)
 		}
 #endif /* CONFIG_TCPC_CLASS */
 
+//zfradd0118s
+#ifdef CONFIG_SHIFT6M_PROJECT
+		//ljj add for detecting the non-std as the low inserting speed 
+		g_non_std_chr_det = 0;
+#endif
+//zfradd0118e
 		wake_unlock(&battery_suspend_lock);
 
 		BMT_status.charger_exist = KAL_FALSE;
