@@ -3780,20 +3780,19 @@ static kal_uint32 set_test_pattern_mode(kal_bool enable)
 * GLOBALS AFFECTED
 *
 *************************************************************************/
-#if 0
-static int AF_Standby = 0;
-//ljj add
+
 #ifdef CONFIG_MTK_LENS_BU63165AF_SUPPORT
+static int AF_Standby = 0;
 extern int BU63165AF_Standby(void);
 #endif
-//ljj end
-#endif
+
 
 static kal_uint32 get_imgsensor_id(UINT32 *sensor_id)
 {
     kal_uint8 i = 0;
     kal_uint8 retry = 2;
-#if 0	
+
+#ifdef CONFIG_MTK_LENS_BU63165AF_SUPPORT
     if(AF_Standby == 0)
     {	
     	AF_Standby ++;
