@@ -1088,7 +1088,7 @@
 			ocv_board_compesate = <0 >;
 			r_fg_board_base = <1000 >;
 			r_fg_board_slope = <1000 >;
-			car_tune_value = <118 >;
+			car_tune_value = <100 >;/*ori is <118 >*/
 			/* HW Fuel gague  */
 			current_detect_r_fg = <10 >;	/* Unit: mA */
 			minerroroffset = <1000 >;
