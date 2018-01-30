@@ -5287,7 +5287,7 @@ static int stk3x1x_i2c_probe(struct i2c_client *client, const struct i2c_device_
 	obj->wait_val = 0xF;
 	obj->int_val = 0;
 	obj->first_boot = true;			 
-	obj->als_correct_factor = 1000;
+	obj->als_correct_factor = 250;
 	atomic_set(&obj->ps_high_thd_val, obj->hw->ps_threshold_high);//  obj->hw->ps_high_thd_val
 	atomic_set(&obj->ps_low_thd_val, obj->hw->ps_threshold_low);	
     APS_ERR("als/ps pxs_psensor_debug_xx high:%d , %s  \n", obj->hw->ps_threshold_high , __func__ );	
