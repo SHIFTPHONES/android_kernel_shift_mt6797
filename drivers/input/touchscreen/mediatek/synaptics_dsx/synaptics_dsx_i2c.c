@@ -93,7 +93,7 @@
 #define SENSOR_MAX_X 1080
 #define SENSOR_MAX_Y 1920
 
-#define WAKEUP_GESTURE true
+#define WAKEUP_GESTURE 0	//Disable Double Tap to Wake,lcy,20180130
 
 #define NO_0D_WHILE_2D
 /*
