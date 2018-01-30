@@ -447,6 +447,7 @@ static int AF_i2c_remove(struct i2c_client *client)
 static int AF_i2c_probe(struct i2c_client *client, const struct i2c_device_id *id)
 {
 	int i4RetValue = 0;
+	int i;
 
 	LOG_INF("Start\n");
 
@@ -470,6 +471,23 @@ static int AF_i2c_probe(struct i2c_client *client, const struct i2c_device_id *i
 
 #if 0 /* ndef CONFIG_MTK_LEGACY */
 	AFRegulatorCtrl(0);
+#endif
+
+#ifdef CONFIG_MTK_LENS_BU63165AF_SUPPORT
+	for (i = 0; i < MAX_NUM_OF_LENS; i++) {
+		printk("Search Motor Name : %s\n", g_stAF_DrvList[i].uDrvName);
+		if (strcmp(AFDRV_BU63165AF, g_stAF_DrvList[i].uDrvName) == 0) {
+			g_pstAF_CurDrv = &g_stAF_DrvList[i];
+			g_pstAF_CurDrv->pAF_SetI2Cclient(g_pstAF_I2Cclient, &g_AF_SpinLock, &g_s4AF_Opened);		
+			if(g_pstAF_I2Cclient == NULL)
+			{
+				printk("%s: %s set I2C client error\n", __func__, g_stAF_DrvList[i].uDrvName);
+			}else{
+				printk("%s: %s set I2C client ok\n", __func__, g_stAF_DrvList[i].uDrvName);
+			}
+			break;
+		}
+	}
 #endif
 
 	LOG_INF("Attached!!\n");
