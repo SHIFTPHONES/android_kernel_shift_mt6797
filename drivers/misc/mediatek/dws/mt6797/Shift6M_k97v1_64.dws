@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--dct_version="2.5" buid_sn="161102" dws_modification_time="01.09.2018.16:31:05"-->
+<!--dct_version="2.5" buid_sn="161102" dws_modification_time="01.31.2018.09:35:59"-->
 <dct_cfg>
     <general chip="MT6797">
         <proj>Shift6M_k97v1_64</proj>
@@ -80,7 +80,7 @@
                 <varName>SAR_EINT</varName>
                 <debounce_time>0</debounce_time>
                 <polarity>Low</polarity>
-                <sensitive_level>Level</sensitive_level>
+                <sensitive_level>Edge</sensitive_level>
                 <debounce_en>Disable</debounce_en>
             </eint8>
             <eint9>
@@ -1265,7 +1265,7 @@
                 <def_mode>1</def_mode>
                 <mode_arr>11000000</mode_arr>
                 <inpull_en>true</inpull_en>
-                <inpull_selhigh>true</inpull_selhigh>
+                <inpull_selhigh>false</inpull_selhigh>
                 <def_dir>IN</def_dir>
                 <in>true</in>
                 <out>false</out>
