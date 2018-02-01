@@ -621,6 +621,11 @@ static int initialize(psx93XX_t this)
 		
 		
 		sx9310_reg_init(this);
+#ifdef CONFIG_SHIFT6M_PROJECT//hanzening added
+		write_register(this, sx9310_CPS_CTRL0_REG, 0x51);//shift6m only use cs0
+		write_register(this, sx9310_CPS_CTRL8_REG, 0x98);//range = 10mm
+#endif
+		write_register(this, sx9310_IRQSTAT_REG, 0xff);//calibrate when boot up
 		msleep(300); /* make sure everything is running */
 		manual_offset_calibration(this);
 
