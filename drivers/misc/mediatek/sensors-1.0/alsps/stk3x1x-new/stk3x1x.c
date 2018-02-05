@@ -5112,6 +5112,11 @@ static int als_get_data(int* value, int* status)
 	}
 	else
 	{
+#ifdef CONFIG_SHIFT6M_PROJECT
+//hanzening add for aal               
+        *value = obj->als;
+//end
+#else
 		if(obj->als < 3)
 		{
 			obj->als_last = obj->als;
@@ -5126,6 +5131,7 @@ static int als_get_data(int* value, int* status)
 		{
 			*value = stk3x1x_get_als_value(obj, obj->als_last);
 		}					
+#endif
 	
 		*status = SENSOR_STATUS_ACCURACY_MEDIUM;
 	}
