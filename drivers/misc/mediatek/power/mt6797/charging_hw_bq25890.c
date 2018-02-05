@@ -1035,11 +1035,12 @@ static int charging_sw_init(void *data)
 
 	/*CV mode */
 	//ori bq25890_config_interface(bq25890_CON6, 0x20, 0x3F, 2);	/* VREG=CV 4.352V (default 4.208V) */
-	#ifdef CONFIG_SHIFT6M_PROJECT
-		bq25890_config_interface(bq25890_CON6, 0x24 0x3F, 2);	/* VREG=CV 4.416V (default 4.208V) */
-	#else
+#ifdef CONFIG_SHIFT6M_PROJECT
+//		bq25890_config_interface(bq25890_CON6, 0x24 0x3F, 2);	/* VREG=CV 4.416V (default 4.208V) */
+		bq25890_config_interface(bq25890_CON6, 0x23 0x3F, 2);	/* VREG=CV 4.400V (default 4.208V) */
+#else
 		bq25890_config_interface(bq25890_CON6, 0x20, 0x3F, 2);	/* VREG=CV 4.352V (default 4.208V) */
-	#endif
+#endif
 	/* upmu_set_rg_vcdt_hv_en(0); */
 
 	/* The following setting is moved from HW_INIT */
