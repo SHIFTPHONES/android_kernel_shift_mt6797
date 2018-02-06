@@ -973,7 +973,11 @@ static void mtk_select_cv(void)
 #endif
 
 	if (batt_cust_data.high_battery_voltage_support)
-		cv_voltage = BATTERY_VOLT_04_340000_V;
+		#ifdef CONFIG_SHIFT6M_PROJECT
+			cv_voltage = BATTERY_VOLT_04_400000_V;
+		#else
+			cv_voltage = BATTERY_VOLT_04_340000_V;
+		#endif
 	else
 		cv_voltage = BATTERY_VOLT_04_200000_V;
 
