@@ -1724,7 +1724,11 @@ static void battery_update(struct battery_data *bat_data)
 	struct power_supply *bat_psy = &bat_data->psy;
 	static unsigned int shutdown_cnt = 0xBADDCAFE;
 	static unsigned int shutdown_cnt_chr = 0xBADDCAFE;
+#ifdef CONFIG_SHIFT6M_PROJECT//
+	static unsigned int update_cnt = 0;
+#else
 	static unsigned int update_cnt = 6;
+#endif
 	static unsigned int pre_uisoc2;
 	static unsigned int pre_chr_state;
 
