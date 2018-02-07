@@ -98,6 +98,9 @@ static unsigned long timer_pos;
 #define LONG_PWRKEY_PRESS_TIME_US       1000000 /*500ms */
 #endif
 
+#ifdef CONFIG_SHIFT6M_PROJECT
+extern void ktd2037_led_off(void);//mly
+#endif
 /*****************************************************************************
  * PMIC extern function
  ******************************************************************************/
@@ -296,6 +299,9 @@ void chrdet_int_handler(void)
 		if (boot_mode == KERNEL_POWER_OFF_CHARGING_BOOT
 		    || boot_mode == LOW_POWER_OFF_CHARGING_BOOT) {
 			PMICLOG("[chrdet_int_handler] Unplug Charger/USB\n");
+		#ifdef CONFIG_SHIFT6M_PROJECT
+			 ktd2037_led_off();//mly
+		#endif	 
 			mt_power_off();
 		}
 	}
