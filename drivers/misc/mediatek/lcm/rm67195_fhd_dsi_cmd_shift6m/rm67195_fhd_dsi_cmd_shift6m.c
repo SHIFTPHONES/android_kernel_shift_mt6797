@@ -121,6 +121,9 @@ static struct LCM_setting_table lcm_initialization_setting[] = {
 {0xFE,1,{0x0B}},     
 {0x28,1,{0x40}},     
 {0x29,1,{0x4F}},  
+{0xFE,1,{0x0D}},  //esd add //error report   
+{0x20,1,{0xff}},  //esd add     
+{0x21,1,{0xff}},  //esd add  
 {0xFE,1,{0x00}},
 {0xC2,1,{0x08}},//0x08  cmd mode
 {0x35,1,{0x00}},//for te
@@ -229,7 +232,7 @@ static void lcm_get_params(LCM_PARAMS *params)
 	params->dsi.PLL_CLOCK = 430;
 
 
-	params->dsi.esd_check_enable = 0;
+	params->dsi.esd_check_enable = 1;
    	params->dsi.customization_esd_check_enable = 1;
 	params->dsi.lcm_esd_check_table[0].cmd          = 0x0A; //53
 	params->dsi.lcm_esd_check_table[0].count        = 1;
