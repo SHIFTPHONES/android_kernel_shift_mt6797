@@ -76,4 +76,6 @@ typedef enum {
 /* Other platform-dependent features */
 #define DISP_PATH_DELAYED_TRIGGER_33ms_SUPPORT
 
+#define MTKFB_NOT_SUPPORT_CAPTURE_FB
+
 #endif	/* __DISP_DRV_PLATFORM_H__ */

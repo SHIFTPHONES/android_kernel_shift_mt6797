@@ -918,6 +918,10 @@ static int mtkfb_ioctl(struct fb_info *info, unsigned int cmd, unsigned long arg
 
 	case MTKFB_CAPTURE_FRAMEBUFFER:
 	{
+#if defined(MTKFB_NOT_SUPPORT_CAPTURE_FB)
+		DISPERR("[FB] not support capture_framebuffer\n");
+		return 0;
+#else
 		unsigned long dst_pbuf = 0;
 		unsigned long *src_pbuf = 0;
 		unsigned int pixel_bpp = info->var.bits_per_pixel / 8;
@@ -945,6 +949,7 @@ static int mtkfb_ioctl(struct fb_info *info, unsigned int cmd, unsigned long arg
 		}
 
 		return r;
+#endif
 	}
 
 	case MTKFB_SLT_AUTO_CAPTURE:
@@ -1362,6 +1367,10 @@ static int mtkfb_compat_ioctl(struct fb_info *info, unsigned int cmd, unsigned l
 	}
 	case COMPAT_MTKFB_CAPTURE_FRAMEBUFFER:
 	{
+#if defined(MTKFB_NOT_SUPPORT_CAPTURE_FB)
+		DISPERR("[FB] not support capture_framebuffer\n");
+		return 0;
+#else
 		compat_ulong_t __user *data32;
 		unsigned long *pbuf;
 		unsigned int pixel_bpp = info->var.bits_per_pixel / 8;
@@ -1385,6 +1394,7 @@ static int mtkfb_compat_ioctl(struct fb_info *info, unsigned int cmd, unsigned l
 			}
 		}
 		break;
+#endif
 	}
 	case COMPAT_MTKFB_TRIG_OVERLAY_OUT:
 	{
