@@ -46,6 +46,9 @@ static struct pep20_profile_t pep20_profile[] = {
 	{4100, VBAT4100_VBUS},
 	{4200, VBAT4200_VBUS},
 	{4300, VBAT4300_VBUS},
+#ifdef CONFIG_SHIFT6M_PROJECT
+	{4400, VBAT4400_VBUS}, //z0208add
+#endif
 };
 
 
@@ -123,6 +126,8 @@ static int pep20_check_leave_status(void)
 	/* PE+ leaves unexpectedly */
 	vchr = battery_meter_get_charger_voltage();
 	if (abs(vchr - pep20_ta_vchr_org) < 1000) {
+	#ifdef CONFIG_SHIFT6M_PROJECT  //zfr20180208 here
+       #else
 		battery_log(BAT_LOG_CRTI,
 			"%s: PE+20 leave unexpectedly, recheck TA\n", __func__);
 		pep20_to_check_chr_type = true;
@@ -131,6 +136,7 @@ static int pep20_check_leave_status(void)
 			goto _err;
 
 		return ret;
+	#endif
 	}
 
 	ichg = battery_meter_get_battery_current(); /* 0.1 mA */
