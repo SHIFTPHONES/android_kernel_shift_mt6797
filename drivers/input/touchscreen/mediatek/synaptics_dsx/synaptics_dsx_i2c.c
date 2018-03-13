@@ -3870,6 +3870,29 @@ static void synaptics_rmi4_wakeup_gesture(struct synaptics_rmi4_data *rmi4_data,
 	return;
 }
 
+/*temp solution 0309*/
+static void synaptics_hw_sw_reset(void)
+{
+	int retval;
+	unsigned char command = 0x01;
+
+	struct synaptics_rmi4_data *rmi4_data = g_rmi4_ptr;
+	
+	//hw reset
+	tpd_gpio_output(0,0);// reset pin low
+	msleep(50);
+	tpd_gpio_output(0,1);// reset pin high
+	msleep(100);
+	
+	//sw reset*
+	// Do a device reset first 
+	retval = synaptics_rmi4_i2c_write(rmi4_data,
+			rmi4_data->f01_cmd_base_addr,
+			&command,
+			sizeof(command));
+
+	printk("[%s]TP hw sw reset end 0305\n", __func__);
+}
  /**
  * synaptics_rmi4_suspend()
  *
@@ -3968,6 +3991,7 @@ exit:
 	rmi4_data->touch_stopped = false;
 	tpd_halt_dsx = 0;
 
+	synaptics_hw_sw_reset();//0309
 	return;
 }
 
