@@ -140,7 +140,7 @@ static int read_register(psx93XX_t this, u8 address, u8 *value)
 {
 	struct i2c_client *i2c = 0;
 	s32 returnValue = 0;
-//	s32 test = 0,i =0 ;//pxs_add
+	s32 test = 0,i =0 ;//pxs_add
 	
 	if (this && value && this->bus) {
 		i2c = this->bus;
@@ -149,13 +149,22 @@ static int read_register(psx93XX_t this, u8 address, u8 *value)
 		returnValue = i2c_smbus_read_byte_data(i2c,address);	
 		CAP_DBG("read_register Address: 0x%x Return: 0x%x\n",address,returnValue);
 		
-#if 0 //pxs
+#if 1 //pxs
 		i=0x00;	
 		test = i2c_smbus_read_byte_data(i2c,i);		
 			CAP_DBG("pxs_sx9310 read_register addr: 0x%x Return: 0x%x \n",i,test);//pxs_add	
 		i=0x01;
 		test = i2c_smbus_read_byte_data(i2c,i);		
-			CAP_DBG("pxs_sx9310 read_register addr: 0x%x Return: 0x%x \n",i,test);//pxs_add					
+			CAP_DBG("pxs_sx9310 read_register addr: 0x%x Return: 0x%x \n",i,test);//pxs_add
+			
+		i=0x03;
+		test = i2c_smbus_read_byte_data(i2c,i);		
+			CAP_DBG("pxs_sx9310 read_register addr: 0x%x Return: 0x%x \n",i,test);//pxs_add			
+
+		i=0x10;
+		test = i2c_smbus_read_byte_data(i2c,i);		
+			CAP_DBG("pxs_sx9310 read_register addr: 0x%x Return: 0x%x \n",i,test);//pxs_add	
+											
 		i=0x18;
 		test = i2c_smbus_read_byte_data(i2c,i);		
 			CAP_DBG("pxs_sx9310 read_register addr: 0x%x Return: 0x%x \n",i,test);//pxs_add			
@@ -164,14 +173,34 @@ static int read_register(psx93XX_t this, u8 address, u8 *value)
 			CAP_DBG("pxs_sx9310 read_register addr: 0x%x Return: 0x%x \n",i,test);//pxs_add	
 		i=0x30;
 		test = i2c_smbus_read_byte_data(i2c,i);		
-			CAP_DBG("pxs_sx9310 read_register addr: 0x%x Return: 0x%x \n",i,test);//pxs_add				
+			CAP_DBG("pxs_sx9310 read_register addr: 0x%x Return: 0x%x \n",i,test);//pxs_add	
+		i=0x31;
+		test = i2c_smbus_read_byte_data(i2c,i);		
+			CAP_DBG("pxs_sx9310 read_register addr: 0x%x Return: 0x%x \n",i,test);//pxs_add	
+		i=0x32;
+		test = i2c_smbus_read_byte_data(i2c,i);		
+			CAP_DBG("pxs_sx9310 read_register addr: 0x%x Return: 0x%x \n",i,test);//pxs_add	
+		i=0x33;
+		test = i2c_smbus_read_byte_data(i2c,i);		
+			CAP_DBG("pxs_sx9310 read_register addr: 0x%x Return: 0x%x \n",i,test);//pxs_add
+		i=0x34;
+		test = i2c_smbus_read_byte_data(i2c,i);		
+			CAP_DBG("pxs_sx9310 read_register addr: 0x%x Return: 0x%x \n",i,test);//pxs_add								
+									
 		i=0x35;
 		test = i2c_smbus_read_byte_data(i2c,i);		
 			CAP_DBG("pxs_sx9310 read_register addr: 0x%x Return: 0x%x \n",i,test);//pxs_add			
 		i=0x36;
 		test = i2c_smbus_read_byte_data(i2c,i);		
 			CAP_DBG("pxs_sx9310 read_register addr: 0x%x Return: 0x%x \n",i,test);//pxs_add	
-//#else
+		i=0x37;
+		test = i2c_smbus_read_byte_data(i2c,i);		
+			CAP_DBG("pxs_sx9310 read_register addr: 0x%x Return: 0x%x \n",i,test);//pxs_add				
+		i=0x38;
+		test = i2c_smbus_read_byte_data(i2c,i);		
+			CAP_DBG("pxs_sx9310 read_register addr: 0x%x Return: 0x%x \n",i,test);//pxs_add			
+			
+#else
 	for(i = 0; i<=0x38 ; i ++)
 	{
 		test = i2c_smbus_read_byte_data(i2c,i);
@@ -622,8 +651,10 @@ static int initialize(psx93XX_t this)
 		
 		sx9310_reg_init(this);
 #ifdef CONFIG_SHIFT6M_PROJECT//hanzening added
-		write_register(this, sx9310_CPS_CTRL0_REG, 0x51);//shift6m only use cs0
-		write_register(this, sx9310_CPS_CTRL8_REG, 0x98);//range = 10mm
+		write_register(this, sx9310_CPS_CTRL0_REG, 0x51);//shift6m only use cs0 ; hzn
+		write_register(this, sx9310_CPS_CTRL8_REG, 0x98);//range = 10mm			; hzn
+		write_register(this, sx9310_IRQ_ENABLE_REG, 0x70);//compensation interrupt	//; pxs_add 20180312
+		
 #endif
 		write_register(this, sx9310_IRQSTAT_REG, 0xff);//calibrate when boot up
 		msleep(300); /* make sure everything is running */
