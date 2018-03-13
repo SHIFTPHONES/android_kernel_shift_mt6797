@@ -22,7 +22,7 @@ config CRYPTO_SHA256_ARM
 
 config MTK_ADVERTISE_CE_SUPPORT
 	bool "advertise availability of v8 Crypto instructions"
-	default n
+	default y
 	help
 	  Select if you want to advertise the availability of the
           ARMv8 Crypto instructions (PMULL, AES, SHA1, SHA2, CRC32).
