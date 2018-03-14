@@ -851,21 +851,21 @@ static int sx9310_i2c_detect(struct i2c_client *client, struct i2c_board_info *i
 
 static int sx9310_i2c_suspend(struct i2c_client *client, pm_message_t msg)
 {
-	psx93XX_t this = i2c_get_clientdata(client);
+	//psx93XX_t this = i2c_get_clientdata(client);
 
 	CAP_FUN();
 
-	sx93XX_suspend(this);
+	//sx93XX_suspend(this);
 	return 0;
 }
 
 static int sx9310_i2c_resume(struct i2c_client *client)
 {
-	psx93XX_t this = i2c_get_clientdata(client);
+	//psx93XX_t this = i2c_get_clientdata(client);
 
 	CAP_FUN();
 
-	sx93XX_resume(this);
+	//sx93XX_resume(this);
 	return 0;
 }
 
