@@ -51,7 +51,7 @@ void ktd2037_lowbattery_breath_leds(void){
 	 * reg5 = 0xaa, reg1 = 0x12
 	 */
         printk("ktd2037_lowbattery_breath_leds\n");
-	i2c_smbus_write_byte_data(ktd2037_client, 0x06, 0x13);//set current is 2.5mA
+	i2c_smbus_write_byte_data(ktd2037_client, 0x06, 0x09);//set current is 2.5mA
 	i2c_smbus_write_byte_data(ktd2037_client, 0x01, 0x12);//dry flash period
 	i2c_smbus_write_byte_data(ktd2037_client, 0x02, 0x00);//reset internal counter
 	i2c_smbus_write_byte_data(ktd2037_client, 0x04, 0x42);//allocate led1 to timer1;
@@ -60,23 +60,25 @@ void ktd2037_lowbattery_breath_leds(void){
 
 void ktd2037_battery_charging_low(void){
 	//turn on led when battery level<15% and charging=>solid red
-        printk("ktd2037_battery_charging_low\n");
-	i2c_smbus_write_byte_data(ktd2037_client, 0x06, 0x13);//set current is 2.5mA
-	i2c_smbus_write_byte_data(ktd2037_client, 0x04, 0x41);//turn on all of leds;
+    printk("ktd2037_battery_charging_low\n");
+	i2c_smbus_write_byte_data(ktd2037_client, 0x06, 0x09);//set current
+	i2c_smbus_write_byte_data(ktd2037_client, 0x04, 0x41);//turn on led1;
+	//i2c_smbus_write_byte_data(ktd2037_client, 0x04, 0x41);//turn on all of leds;
 }
 
 void ktd2037_battery_charging_middle(void){
 	//turn on led when 15%<battert level<=90 and charging=>solid orange(Red+Green)
-        printk("ktd2037_battery_charging_middle\n");
-	i2c_smbus_write_byte_data(ktd2037_client, 0x06, 0x13);//set current is 2.5mA
-        i2c_smbus_write_byte_data(ktd2037_client, 0x08, 0x00);//set current is 0.125mA
-	i2c_smbus_write_byte_data(ktd2037_client, 0x04, 0x51);//turn on LED1 and LED3;
+    printk("ktd2037_battery_charging_middle\n");
+	i2c_smbus_write_byte_data(ktd2037_client, 0x06, 0x09);//set current
+	i2c_smbus_write_byte_data(ktd2037_client, 0x04, 0x41);//turn on led1;
+    //i2c_smbus_write_byte_data(ktd2037_client, 0x08, 0x00);//set current is 0.125mA
+	//i2c_smbus_write_byte_data(ktd2037_client, 0x04, 0x51);//turn on LED1 and LED3;
 }
 
 void ktd2037_battery_charging_High(void){
-	//turn on led when battery level>=90% and charging=>solid Green
+	//turn on led when battery level>=100% and charging=>solid Green
         printk("ktd2037_battery_charging_High\n");
-	i2c_smbus_write_byte_data(ktd2037_client, 0x08, 0x13);//set current is 2.5mA
+	i2c_smbus_write_byte_data(ktd2037_client, 0x08, 0x06);//set current
 	i2c_smbus_write_byte_data(ktd2037_client, 0x04, 0x50);//turn on led3;
 }
 
@@ -86,7 +88,7 @@ void ktd2037_events_breath_leds(void){
 	 * reg5 = 0xaa, reg1 = 0x30	
 	 */
         printk("ktd2037_events_breath_leds\n");
-	i2c_smbus_write_byte_data(ktd2037_client, 0x07, 0x13);//set current is 2.5mA
+	i2c_smbus_write_byte_data(ktd2037_client, 0x07, 0x12);//set current
 	i2c_smbus_write_byte_data(ktd2037_client, 0x01, 0x12);//dry flash period
 	i2c_smbus_write_byte_data(ktd2037_client, 0x02, 0x00);//reset internal counter
 	i2c_smbus_write_byte_data(ktd2037_client, 0x04, 0x48);//allocate led2 to timer1;
@@ -122,7 +124,7 @@ void ktd2037_breath_leds_time(int blink){
 	printk("ktd2037 led write blink = %x, period = %x, flashtime = %x\n", blink, period, flashtime);
 	i2c_smbus_write_byte_data(ktd2037_client, 0x00, 0x20);// initialization LED off
 	i2c_smbus_write_byte_data(ktd2037_client, 0x04, 0x00);// initialization LED off
-	i2c_smbus_write_byte_data(ktd2037_client, 0x06, 0xbf);//set current is 24mA
+	i2c_smbus_write_byte_data(ktd2037_client, 0x06, 0x09);//set current
 	i2c_smbus_write_byte_data(ktd2037_client, 0x05, period);//rase time
 	i2c_smbus_write_byte_data(ktd2037_client, 0x01, flashtime);//dry flash period
 	i2c_smbus_write_byte_data(ktd2037_client, 0x02, 0x00);//reset internal counter
@@ -135,7 +137,7 @@ void ktd2037_red_led_turn_on(void){
 	i2c_smbus_write_byte_data(ktd2037_client, 0x00, 0x05);// initialization LED off
 	i2c_smbus_write_byte_data(ktd2037_client, 0x04, 0x00);// initialization LED off
         i2c_smbus_write_byte_data(ktd2037_client, 0x09, 0x06);// disable auto blink
-	i2c_smbus_write_byte_data(ktd2037_client, 0x06, 0x13);//set current is 2.5mA
+	i2c_smbus_write_byte_data(ktd2037_client, 0x06, 0x09);//set current
 	i2c_smbus_write_byte_data(ktd2037_client, 0x04, 0x41);//turn on led1;
 }
 
@@ -144,7 +146,7 @@ void ktd2037_blue_led_turn_on(void){
 	i2c_smbus_write_byte_data(ktd2037_client, 0x00, 0x05);// initialization LED off
 	i2c_smbus_write_byte_data(ktd2037_client, 0x04, 0x00);// initialization LED off
         i2c_smbus_write_byte_data(ktd2037_client, 0x09, 0x06);// disable auto blink
-	i2c_smbus_write_byte_data(ktd2037_client, 0x07, 0x13);//set current is 2.5mA
+	i2c_smbus_write_byte_data(ktd2037_client, 0x07, 0x12);//set current
 	i2c_smbus_write_byte_data(ktd2037_client, 0x04, 0x44);//turn on led2;
 }
 
@@ -152,18 +154,20 @@ void ktd2037_green_led_turn_on(void){
 	i2c_smbus_write_byte_data(ktd2037_client, 0x00, 0x05);// initialization LED off
 	i2c_smbus_write_byte_data(ktd2037_client, 0x04, 0x00);// initialization LED off
         i2c_smbus_write_byte_data(ktd2037_client, 0x09, 0x06);// disable auto blink
-	i2c_smbus_write_byte_data(ktd2037_client, 0x08, 0x13);//set current is 2.5mA
+	i2c_smbus_write_byte_data(ktd2037_client, 0x08, 0x05);//set current
 	i2c_smbus_write_byte_data(ktd2037_client, 0x04, 0x50);//turn on led3;
 }
 
 
 void ktd2037_red_green_turn_on(void){
+/*
 	i2c_smbus_write_byte_data(ktd2037_client, 0x00, 0x05);// initialization LED off
 	i2c_smbus_write_byte_data(ktd2037_client, 0x04, 0x00);// initialization LED off
         i2c_smbus_write_byte_data(ktd2037_client, 0x09, 0x06);// disable auto blink
 	i2c_smbus_write_byte_data(ktd2037_client, 0x06, 0x13);//set current is 2.5mA
         i2c_smbus_write_byte_data(ktd2037_client, 0x08, 0x00);//set current is 0.125mA
 	i2c_smbus_write_byte_data(ktd2037_client, 0x04, 0x51);//turn on LED1 and LED3;
+*/
 }
 
 void ktd2037_turn_off_LED(void){
