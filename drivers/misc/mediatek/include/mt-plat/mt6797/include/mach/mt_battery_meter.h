@@ -83,7 +83,7 @@
 #define R_FG_BOARD_BASE	1000
 #define R_FG_BOARD_SLOPE	1000 /*slope*/
 #ifdef CONFIG_SHIFT6M_PROJECT
-	#define CAR_TUNE_VALUE	100 
+	#define CAR_TUNE_VALUE	117 
 #else
 	#if defined(CONFIG_MTK_PMIC_CHIP_MT6353)
 		#define CAR_TUNE_VALUE	101    /*1.00 */
