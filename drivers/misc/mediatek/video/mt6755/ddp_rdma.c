@@ -38,10 +38,10 @@
 #define MMSYS_CLK_LOW (0)
 #define MMSYS_CLK_HIGH (1)
 #define MMSYS_CLK_MEDIUM (2)
-#define PRI_DISPLAY_MAX_HEIGHT (1920)
+#define PRI_DISPLAY_MAX_HEIGHT (2160)
 #define PRI_DISPLAY_MAX_WIDTH  (1080)
 #define EXT_DISPLAY_MAX_HEIGHT (1080)
-#define EXT_DISPLAY_MAX_WIDTH  (1920)
+#define EXT_DISPLAY_MAX_WIDTH  (2160)
 
 
 static unsigned int rdma_fps[RDMA_INSTANCES] = { 60, 60 };
@@ -402,12 +402,12 @@ void rdma_set_ultra_l(unsigned int idx, unsigned int bpp, void *handle, golden_s
 			preultra_high_us = 15;
 		}
 	} else {
-		if (rdma_golden_setting->ext_dst_width  == 1920 && rdma_golden_setting->ext_dst_height == 1080) {
+		if (rdma_golden_setting->ext_dst_width  >= 1920 && rdma_golden_setting->ext_dst_height == 1080) {
 			ultra_low_us = 4;
 			ultra_high_us = 6;
 			preultra_low_us = ultra_high_us;
 			preultra_high_us = 7;
-		} else if ((rdma_golden_setting->ext_dst_width == 1280 && rdma_golden_setting->ext_dst_height == 720)
+		} else if ((rdma_golden_setting->ext_dst_width >= 1280 && rdma_golden_setting->ext_dst_height == 720)
 		|| (rdma_golden_setting->ext_dst_width == 720 && rdma_golden_setting->ext_dst_height == 480)) {
 			if (rdma_golden_setting->ext_hrt_num > rdma_golden_setting->hrt_magicnum) {
 				ultra_low_us = 8;

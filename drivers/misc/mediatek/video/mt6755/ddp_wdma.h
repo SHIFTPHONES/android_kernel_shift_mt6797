@@ -17,7 +17,7 @@
 #include "ddp_info.h"
 
 #define WDMA_INSTANCES  2
-#define WDMA_MAX_WIDTH  1920
+#define WDMA_MAX_WIDTH  2160
 #define WDMA_MAX_HEIGHT 1080
 
 enum WDMA_INPUT_FORMAT {

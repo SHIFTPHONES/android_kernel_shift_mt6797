@@ -29,6 +29,46 @@
 static struct layering_rule_ops l_rule_ops;
 static struct layering_rule_info_t l_rule_info;
 
+#ifdef CONFIG_MTK_ROUND_CORNER_SUPPORT
+int emi_bound_table[HRT_BOUND_NUM][HRT_LEVEL_NUM] = {
+	/* HRT_BOUND_TYPE_NORMAL */
+	{3, 5},
+	{5, 8},
+	{2, 3},
+};
+
+int larb_bound_table[HRT_BOUND_NUM][HRT_LEVEL_NUM] = {
+	/* HRT_BOUND_TYPE_NORMAL */
+	{12, 12},
+};
+
+/**
+ * The layer mapping table define ovl layer dispatch rule for both
+ * primary and secondary display.Each table has 16 elements which
+ * represent the layer mapping rule by the number of input layers.
+ */
+static int layer_mapping_table[HRT_TB_NUM][TOTAL_OVL_LAYER_NUM] = {
+	/* HRT_TB_TYPE_GENERAL */
+	{0x00010001, 0x00030003, 0x00070007, 0x000F000F, 0x000F001F, 0x000F003F,
+	0x000F003F, 0x000F003F, 0x000F003F, 0x000F003F, 0x000F003F, 0x000F003F}
+};
+
+/**
+ * The larb mapping table represent the relation between LARB and OVL.
+ */
+static int larb_mapping_table[HRT_TB_NUM] = {
+	0x00000000,
+};
+
+/**
+ * The OVL mapping table is used to get the OVL index of correcponding layer.
+ * The bit value 1 means the position of the last layer in OVL engine.
+ */
+static int ovl_mapping_table[HRT_TB_NUM] = {
+	0x000800A8,
+};
+
+#else
 int emi_bound_table[HRT_BOUND_NUM][HRT_LEVEL_NUM] = {
 	/* HRT_BOUND_TYPE_NORMAL */
 	{4, 6},
@@ -48,7 +88,7 @@ int larb_bound_table[HRT_BOUND_NUM][HRT_LEVEL_NUM] = {
  */
 static int layer_mapping_table[HRT_TB_NUM][TOTAL_OVL_LAYER_NUM] = {
 	/* HRT_TB_TYPE_GENERAL */
-	{0x00010001, 0x00030003, 0x00070007, 0x000F000F, 0x000F001F, 0x000F007F,
+	{0x00010001, 0x00030003, 0x00070007, 0x000F000F, 0x000F001F, 0x000F003F,
 	0x000F007F, 0x000F00FF, 0x000F00FF, 0x000F00FF, 0x000F00FF, 0x000F00FF}
 };
 
@@ -66,6 +106,7 @@ static int larb_mapping_table[HRT_TB_NUM] = {
 static int ovl_mapping_table[HRT_TB_NUM] = {
 	0x000800A8,
 };
+#endif
 
 #define GET_SYS_STATE(sys_state) ((l_rule_info.hrt_sys_state >> sys_state) & 0x1)
 
