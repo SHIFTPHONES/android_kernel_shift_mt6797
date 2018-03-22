@@ -739,6 +739,10 @@ BOOLEAN rsnPerformPolicySelection(IN P_ADAPTER_T prAdapter, IN P_BSS_DESC_T prBs
 		return FALSE;
 	} else if (prAdapter->rWifiVar.rConnSettings.eEncStatus == ENUM_ENCRYPTION1_ENABLED) {
 		/* If the driver is configured to use WEP only, use this BSS. */
+		if (prBss->fgIERSN || prBss->fgIEWPA) {
+			DBGLOG(RSN, WARN, "-- WEP-only but RSN and IEWPA exist\n");
+			return FALSE;
+		}
 		DBGLOG(RSN, TRACE, "-- WEP-only legacy BSS\n");
 		return TRUE;
 	}
