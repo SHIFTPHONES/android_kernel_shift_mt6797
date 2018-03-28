@@ -2167,7 +2167,11 @@ void mt_battery_GetBatteryData(void)
 		charger_vol = battery_meter_get_charger_voltage();
 	} else {
 		ICharging = 0;
+	#ifdef CONFIG_SHIFT6M_PROJECT	//lcy mod 0328
+		charger_vol = battery_meter_get_charger_voltage();
+	#else
 		charger_vol = 0;
+	#endif
 	}
 	temperature = battery_meter_get_battery_temperature();
 	temperatureV = battery_meter_get_tempV();
