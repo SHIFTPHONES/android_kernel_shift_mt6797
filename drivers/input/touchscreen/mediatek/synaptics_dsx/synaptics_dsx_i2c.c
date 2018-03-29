@@ -3606,7 +3606,7 @@ static int synaptics_rmi4_probe(struct i2c_client *client,
 	tpd_irq_registration();
 	pr_err(" %s:lcy tpd_irq_registration 1\n",__func__);
 #else
-	mt_eint_registration(CUST_EINT_TOUCH_PANEL_NUM, EINTF_TRIGGER_LOW, tpd_eint_handler, 1);
+	mt_eint_registration(CUST_EINT_TOUCH_PANEL_NUM, EINTF_TRIGGER_FALLING, tpd_eint_handler, 1);
 #endif
 
 	retval = synaptics_rmi4_irq_enable(rmi4_data, true);
