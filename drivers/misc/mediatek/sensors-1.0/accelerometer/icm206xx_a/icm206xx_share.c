@@ -247,7 +247,7 @@ static int icm206xx_ChipSoftReset(struct i2c_client *client)
 		return ICM206XX_ERR_I2C;
 	}
 
-	mdelay(100);
+	mdelay(50);//pxs_20180328
 
 	/* sensor status rset */
 	for (i = 0; i < ICM206XX_SENSOR_TYPE_MAX; i++) {
@@ -320,7 +320,7 @@ static int icm206xx_EnableSensor(struct i2c_client *client, int sensor_type, boo
 	}
 
 	if (enable == true) {
-		startup_time = 50;
+		startup_time = 20; //pxs_20180328
 		if (sensor_type == ICM206XX_SENSOR_TYPE_ACC || sensor_type == ICM206XX_SENSOR_TYPE_STEP_COUNTER) {
 			databuf[0] &= ~ICM206XX_BIT_ACCEL_STANDBY;
 
