@@ -9594,7 +9594,9 @@ static unsigned int hmp_up_migration(int cpu, int *target_cpu, struct sched_enti
 	struct clb_stats *L, *B;
 	struct mcheck *check;
 	int curr_cpu = cpu;
+#ifdef CONFIG_HMP_TRACER
 	unsigned int caller = clbenv->flags;
+#endif
 
 	L = &clbenv->lstats;
 	B = &clbenv->bstats;
