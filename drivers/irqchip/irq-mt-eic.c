@@ -896,7 +896,7 @@ static void mt_eint_en_sw_debounce(unsigned int eint_num)
  /*
  * mt_eint_set_hw_debounce: Set the de-bounce time for the specified EINT number.
  * @gpio_pin: EINT number to acknowledge
- * @us: the de-bounce time to set (in microsecond)
+ * @us: the de-bounce time to set (in nanosecond)
  */
 void mt_eint_set_hw_debounce(unsigned int gpio_pin, unsigned int us)
 {
@@ -916,6 +916,9 @@ void mt_eint_set_hw_debounce(unsigned int gpio_pin, unsigned int us)
 		pr_err("%s: eint_num %d invalid\n", __func__, eint_num);
 		return;
 	}
+
+	if (us >= 20)
+		us /= 1000;
 
 	if (is_bulitin_eint_hw_deb(eint_num))
 		offset = ((eint_num - EINT_BI_HW_DB_START) / 4)
