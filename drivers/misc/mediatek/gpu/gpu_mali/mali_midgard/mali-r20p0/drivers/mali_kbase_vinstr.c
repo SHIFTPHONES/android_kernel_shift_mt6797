@@ -130,6 +130,8 @@ struct kbase_vinstr_context {
 	atomic_t                 request_pending;
 
 	bool                     clients_present;
+
+	struct workqueue_struct  *wq;
 };
 
 /**
@@ -972,7 +974,7 @@ static int kbasep_vinstr_collect_and_accumulate(
 	switch (vinstr_ctx->state)
 	{
 	case VINSTR_SUSPENDING:
-		schedule_work(&vinstr_ctx->suspend_work);
+		queue_work(vinstr_ctx->wq, &vinstr_ctx->suspend_work);
 		break;
 	case VINSTR_DUMPING:
 		vinstr_ctx->state = VINSTR_IDLE;
@@ -1780,6 +1782,12 @@ struct kbase_vinstr_context *kbase_vinstr_init(struct kbase_device *kbdev)
 	if (!vinstr_ctx)
 		return NULL;
 
+	vinstr_ctx->wq = alloc_workqueue("mali_kbase_vinstr", WQ_HIGHPRI, 0);
+	if (!vinstr_ctx->wq) {
+		dev_err(kbdev->dev, "Failed to allocate workqueue\n");
+		return NULL;
+	}
+
 	INIT_LIST_HEAD(&vinstr_ctx->idle_clients);
 	INIT_LIST_HEAD(&vinstr_ctx->waiting_clients);
 	mutex_init(&vinstr_ctx->lock);
@@ -2012,7 +2020,7 @@ int kbase_vinstr_try_suspend(struct kbase_vinstr_context *vinstr_ctx)
 	case VINSTR_IDLE:
 		if (vinstr_ctx->clients_present) {
 			vinstr_ctx->state = VINSTR_SUSPENDING;
-			schedule_work(&vinstr_ctx->suspend_work);
+			queue_work(vinstr_ctx->wq, &vinstr_ctx->suspend_work);
 		} else {
 			vinstr_ctx->state = VINSTR_SUSPENDED;
 
@@ -2061,7 +2069,7 @@ void kbase_vinstr_resume(struct kbase_vinstr_context *vinstr_ctx)
 		if (0 == vinstr_ctx->suspend_cnt) {
 			if (vinstr_ctx->clients_present) {
 				vinstr_ctx->state = VINSTR_RESUMING;
-				schedule_work(&vinstr_ctx->resume_work);
+				queue_work(vinstr_ctx->wq, &vinstr_ctx->resume_work);
 			} else {
 				vinstr_ctx->state = VINSTR_IDLE;
 			}
