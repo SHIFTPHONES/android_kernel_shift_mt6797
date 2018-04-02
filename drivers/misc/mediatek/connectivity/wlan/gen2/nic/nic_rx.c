@@ -1379,7 +1379,8 @@ VOID nicRxProcessEventPacket(IN P_ADAPTER_T prAdapter, IN OUT P_SW_RFB_T prSwRfb
 
 			prEventBssBeaconTimeout = (P_EVENT_BSS_BEACON_TIMEOUT_T) (prEvent->aucBuffer);
 
-			DBGLOG(RX, INFO, "Beacon Timeout Reason = %u\n", prEventBssBeaconTimeout->ucReason);
+			DBGLOG(RX, INFO, "Beacon Timeout Reason = %u, update bad RSSI=-127 to upper layer\n",
+				prEventBssBeaconTimeout->ucReason);
 
 			if (prEventBssBeaconTimeout->ucNetTypeIndex == NETWORK_TYPE_AIS_INDEX) {
 				/* Request stats report before beacon timeout */
@@ -1394,6 +1395,11 @@ VOID nicRxProcessEventPacket(IN P_ADAPTER_T prAdapter, IN OUT P_SW_RFB_T prSwRfb
 					if (prStaRec)
 						STATS_ENV_REPORT_DETECT(prAdapter, prStaRec->ucIndex);
 				}
+
+				mtk_cfg80211_vendor_event_rssi_beyond_range(wiphy,
+					((prAdapter->prGlueInfo)->prDevHandler)->ieee80211_ptr,
+					(INT_32)-127); /* the lowest limit of FWK */
+
 				aisBssBeaconTimeout(prAdapter);
 				aisRecordBeaconTimeout(prAdapter, prBssInfo);
 			}
