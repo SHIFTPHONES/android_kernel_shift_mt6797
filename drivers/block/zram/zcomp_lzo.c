@@ -42,21 +42,12 @@ static void lzo_destroy(void *private)
 	kvfree(private);
 }
 
-#ifdef CONFIG_ZSM
-static int lzo_compress_zram(const unsigned char *src, unsigned char *dst,
-		size_t *dst_len, void *private, int *checksum)
-{
-	int ret = lzo1x_1_compress_zram(src, PAGE_SIZE, dst, dst_len, private, checksum);
-	return ret == LZO_E_OK ? 0 : ret;
-}
-#else
 static int lzo_compress(const unsigned char *src, unsigned char *dst,
 		size_t *dst_len, void *private)
 {
 	int ret = lzo1x_1_compress(src, PAGE_SIZE, dst, dst_len, private);
 	return ret == LZO_E_OK ? 0 : ret;
 }
-#endif
 
 static int lzo_decompress(const unsigned char *src, size_t src_len,
 		unsigned char *dst)
@@ -65,15 +56,7 @@ static int lzo_decompress(const unsigned char *src, size_t src_len,
 	int ret = lzo1x_decompress_safe(src, src_len, dst, &dst_len);
 	return ret == LZO_E_OK ? 0 : ret;
 }
-#ifdef CONFIG_ZSM
-struct zcomp_backend zcomp_lzo = {
-	.compress = lzo_compress_zram,
-	.decompress = lzo_decompress,
-	.create = lzo_create,
-	.destroy = lzo_destroy,
-	.name = "lzo",
-};
-#else
+
 struct zcomp_backend zcomp_lzo = {
 	.compress = lzo_compress,
 	.decompress = lzo_decompress,
@@ -81,5 +64,3 @@ struct zcomp_backend zcomp_lzo = {
 	.destroy = lzo_destroy,
 	.name = "lzo",
 };
-#endif
-

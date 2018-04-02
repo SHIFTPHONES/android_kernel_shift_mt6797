@@ -26,24 +26,10 @@ struct zcomp_strm {
 };
 
 /* static compression backend */
-#ifdef CONFIG_ZSM
 struct zcomp_backend {
-
-	int (*compress)(const unsigned char *src, unsigned char *dst,
-			size_t *dst_len, void *private, int *checksum);
-	int (*decompress)(const unsigned char *src, size_t src_len,
-			unsigned char *dst);
-
-	void *(*create)(void);
-	void (*destroy)(void *private);
-
-	const char *name;
-};
-#else
-struct zcomp_backend {
-
 	int (*compress)(const unsigned char *src, unsigned char *dst,
 			size_t *dst_len, void *private);
+
 	int (*decompress)(const unsigned char *src, size_t src_len,
 			unsigned char *dst);
 
@@ -52,7 +38,7 @@ struct zcomp_backend {
 
 	const char *name;
 };
-#endif
+
 /* dynamic per-device compression frontend */
 struct zcomp {
 	void *stream;
@@ -71,13 +57,10 @@ void zcomp_destroy(struct zcomp *comp);
 
 struct zcomp_strm *zcomp_strm_find(struct zcomp *comp);
 void zcomp_strm_release(struct zcomp *comp, struct zcomp_strm *zstrm);
-#ifdef CONFIG_ZSM
-int zcomp_compress_zram(struct zcomp *comp, struct zcomp_strm *zstrm,
-		const unsigned char *src, size_t *dst_len, int *checksum);
-#else
+
 int zcomp_compress(struct zcomp *comp, struct zcomp_strm *zstrm,
 		const unsigned char *src, size_t *dst_len);
-#endif
+
 int zcomp_decompress(struct zcomp *comp, const unsigned char *src,
 		size_t src_len, unsigned char *dst);
 
