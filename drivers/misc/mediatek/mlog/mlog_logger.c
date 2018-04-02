@@ -38,10 +38,6 @@
 #include <mt-plat/mtk_gpu_utility.h>
 #endif
 
-#ifdef CONFIG_ZRAM
-#include <zram_drv.h>
-#endif
-
 /* for collecting ion total memory usage*/
 #ifdef CONFIG_MTK_ION
 #include <mtk/ion_drv.h>
@@ -518,11 +514,7 @@ static void mlog_meminfo(void)
 #endif
 
 	mlock = P2K(global_page_state(NR_MLOCK));
-#if defined(CONFIG_ZRAM) && defined(CONFIG_ZSMALLOC)
-	zram = zram_mlog();
-#else
-	zram = 0;
-#endif
+	zram = -1;
 
 	active = P2K(global_page_state(NR_ACTIVE_ANON) + global_page_state(NR_ACTIVE_FILE));
 	inactive = P2K(global_page_state(NR_INACTIVE_ANON) + global_page_state(NR_INACTIVE_FILE));
