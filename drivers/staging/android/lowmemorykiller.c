@@ -599,11 +599,6 @@ static int __init lowmem_init(void)
 	unsigned long normal_pages;
 #endif
 
-#ifdef CONFIG_ZRAM
-	vm_swappiness = 100;
-#endif
-
-
 	register_shrinker(&lowmem_shrinker);
 
 #ifdef CONFIG_HIGHMEM
