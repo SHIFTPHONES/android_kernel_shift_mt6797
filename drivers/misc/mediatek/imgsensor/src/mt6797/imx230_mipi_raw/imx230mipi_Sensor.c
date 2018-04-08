@@ -4010,7 +4010,7 @@ static kal_uint32 capture(MSDK_SENSOR_EXPOSURE_WINDOW_STRUCT *image_window,
 		capture_setting_pdaf(imgsensor.current_fps);/*PDAF only*/
     else
 		capture_setting(imgsensor.current_fps);/*Full mode*/
-		//mdelay(100);
+		mdelay(50);//pxs_20180408 ae unormal modify
 //	set_mirror_flip(MIRROR_FLIP_FLAG);
 
     return ERROR_NONE;
