@@ -77,7 +77,8 @@
 #endif
 #endif
 
-#define POWER_THROTTLING 1
+// always allow turning flashlight on
+#define POWER_THROTTLING 0
 #define DLPT_FEATURE 1
 
 #if DLPT_FEATURE
@@ -577,11 +578,13 @@ static long flashlight_ioctl_core(struct file *file, unsigned int cmd, unsigned 
 #if DLPT_FEATURE
 				kicker_pbm_by_flash(kdArg.arg);
 #endif
+#if POWER_THROTTLING
 				if (!(gLowPowerVbat == LOW_BATTERY_LEVEL_0 &&
 				gLowPowerPer == BATTERY_PERCENT_LEVEL_0 &&
 				gLowPowerOc == BATTERY_OC_LEVEL_0))
 					logI("[FLASH_IOC_SET_ONOFF] PT condition (%d, %d, %d)",
 					gLowPowerVbat, gLowPowerPer, gLowPowerOc);
+#endif
 				i4RetValue = pF->flashlight_ioctl(cmd, kdArg.arg);
 			} else {
 				logI("[FLASH_IOC_SET_ONOFF] function pointer is wrong -");
