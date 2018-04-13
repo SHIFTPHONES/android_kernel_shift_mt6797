@@ -22,7 +22,7 @@
 #define DISABLE_LOW_BATTERY_PROTECT
 
 //Define for disable battery OC protect
-//#define DISABLE_BATTERY_OC_PROTECT
+#define DISABLE_BATTERY_OC_PROTECT
 
 //Define for disable battery 15% protect
 #define DISABLE_BATTERY_PERCENT_PROTECT
