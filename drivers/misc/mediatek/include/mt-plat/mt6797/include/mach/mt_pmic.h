@@ -18,16 +18,15 @@
 
 #define LOW_POWER_LIMIT_LEVEL_1 15
 
-/*
 //Define for disable low battery protect feature, default no define for enable low battery protect.
-//#define DISABLE_LOW_BATTERY_PROTECT
+#define DISABLE_LOW_BATTERY_PROTECT
 
 //Define for disable battery OC protect
 //#define DISABLE_BATTERY_OC_PROTECT
 
 //Define for disable battery 15% protect
-//#define DISABLE_BATTERY_PERCENT_PROTECT
-*/
+#define DISABLE_BATTERY_PERCENT_PROTECT
+
 /*Define for DLPT*/
 /*#define DISABLE_DLPT_FEATURE*/
 #define POWER_UVLO_VOLT_LEVEL 2600

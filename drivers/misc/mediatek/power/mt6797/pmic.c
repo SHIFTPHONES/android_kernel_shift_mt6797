@@ -3388,6 +3388,7 @@ int get_dlpt_imix_charging(void)
 
 int dlpt_check_power_off(void)
 {
+#ifdef LOW_BATTERY_PROTECT
 	int ret = 0;
 
 	ret = 0;
@@ -3417,6 +3418,9 @@ int dlpt_check_power_off(void)
 	}
 
 	return ret;
+#else
+	return 0;
+#endif
 }
 
 
