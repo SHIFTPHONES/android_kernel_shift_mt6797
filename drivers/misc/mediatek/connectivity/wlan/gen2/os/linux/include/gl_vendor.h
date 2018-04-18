@@ -307,7 +307,7 @@ typedef enum {
 #define MAX_BUFFERED_GSCN_RESULTS 5
 
 #define MAX_FW_ROAMING_BLACKLIST_SIZE	16
-#define MAX_FW_ROAMING_WHITELIST_SIZE	16
+#define MAX_FW_ROAMING_WHITELIST_SIZE	8
 
 /*******************************************************************************
 *                             D A T A   T Y P E S
