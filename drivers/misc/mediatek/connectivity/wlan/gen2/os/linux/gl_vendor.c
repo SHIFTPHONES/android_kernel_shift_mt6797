@@ -239,24 +239,29 @@ int mtk_cfg80211_vendor_set_country_code(struct wiphy *wiphy, struct wireless_de
 }
 
 int mtk_cfg80211_vendor_get_roaming_capabilities(struct wiphy *wiphy,
-				 struct wireless_dev *wdev, const void *data, int data_len)
+	struct wireless_dev *wdev, const void *data, int data_len)
 {
-	UINT_32 maxNumOfList[2] = { MAX_FW_ROAMING_BLACKLIST_SIZE, MAX_FW_ROAMING_WHITELIST_SIZE };
+	uint32_t maxNumOfList[2] = { MAX_FW_ROAMING_BLACKLIST_SIZE,
+				     MAX_FW_ROAMING_WHITELIST_SIZE };
 	struct sk_buff *skb;
 
-	ASSERT(wiphy);	/* change to if (wiphy == NULL) then return? */
-	ASSERT(wdev);	/* change to if (wiphy == NULL) then return? */
+	ASSERT(wiphy);
 
-	DBGLOG(REQ, INFO, "Get roaming capabilities: max black/whitelist=%d/%d", maxNumOfList[0], maxNumOfList[1]);
+	DBGLOG(REQ, INFO,
+		"Get roaming capabilities: max black/whitelist=%d/%d",
+		maxNumOfList[0], maxNumOfList[1]);
 
-	skb = cfg80211_vendor_cmd_alloc_reply_skb(wiphy, sizeof(maxNumOfList));
+	skb = cfg80211_vendor_cmd_alloc_reply_skb(wiphy, sizeof(uint32_t) * 2);
 	if (!skb) {
 		DBGLOG(REQ, ERROR, "Allocate skb failed\n");
 		return -ENOMEM;
 	}
 
 	if (unlikely(nla_put(skb, WIFI_ATTRIBUTE_ROAMING_CAPABILITIES,
-						 sizeof(maxNumOfList), maxNumOfList) < 0))
+				sizeof(uint32_t), &maxNumOfList[0]) < 0))
+		goto nla_put_failure;
+	if (unlikely(nla_put(skb, WIFI_ATTRIBUTE_ROAMING_CAPABILITIES,
+				sizeof(uint32_t), &maxNumOfList[1]) < 0))
 		goto nla_put_failure;
 
 	return cfg80211_vendor_cmd_reply(skb);
