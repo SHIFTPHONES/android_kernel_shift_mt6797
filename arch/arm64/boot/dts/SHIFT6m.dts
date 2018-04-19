@@ -169,7 +169,7 @@
 	};
 	led4:led@4 {
 		compatible = "mediatek,keyboard-backlight";
-		led_mode = <0>;
+		led_mode = <3>;
 		data = <1>;
 		pwm_config = <0 0 0 0 0>;
 	};
