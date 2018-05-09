@@ -41,10 +41,10 @@
 
 /* Qmax for battery  */
 #ifdef CONFIG_SHIFT6M_PROJECT
-	#define Q_MAX_POS_50	4188//4186
-	#define Q_MAX_POS_25	4231//4284
-	#define Q_MAX_POS_0		4208//4257
-	#define Q_MAX_NEG_10	4306//4270
+	#define Q_MAX_POS_50	4088	//4188//4186
+	#define Q_MAX_POS_25	4131	//4231//4284
+	#define Q_MAX_POS_0		4108	//4208//4257
+	#define Q_MAX_NEG_10	4206	//4306//4270
 
 	#define Q_MAX_POS_50_H_CURRENT	4166//4151
 	#define Q_MAX_POS_25_H_CURRENT	4205//4262
