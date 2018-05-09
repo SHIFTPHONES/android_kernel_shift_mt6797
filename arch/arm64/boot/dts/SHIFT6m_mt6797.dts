@@ -1067,10 +1067,10 @@
 			temperature_t = <255 >;	/* this should be fixed, never change the value */
 			fg_meter_resistance = <0 >;
 			/* Qmax for 0mA */
-			q_max_pos_50 = <4188 >; /*<4186 >;*/
-			q_max_pos_25 = <4231 >;/*<4284 >;*/
-			q_max_pos_0 = <4208 >;/*<4257 >;*/
-			q_max_neg_10 = <4306 >;/*<4270 >;*/
+			q_max_pos_50 = <4088 >; /*<4188  >;*/
+			q_max_pos_25 = <4131 >;/*<4231 >;*/
+			q_max_pos_0 = <4108 >;/*<4208  >;*/
+			q_max_neg_10 = <4206 >;/*<4306 >;*/
 			/* Qmax for 400mA, said high current */
 			q_max_pos_50_h_current = <4166 >;/*<4151 >;*/
 			q_max_pos_25_h_current = <4205 >;/*<4262 >;*/
