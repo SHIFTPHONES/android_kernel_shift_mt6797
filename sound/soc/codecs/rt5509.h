@@ -20,9 +20,12 @@
 #include <linux/atomic.h>
 #include <linux/semaphore.h>
 #include <mt-plat/rt-regmap.h>
+#ifdef CONFIG_MTK_I2C_EXTENSION
+#include <linux/dma-mapping.h>
+#endif /* #ifdef CONFIG_MTK_I2C_EXTENSION */
 
 #define RT5509_DEVICE_NAME		"rt5509"
-#define RT5509_DRV_VER			"1.0.11_M"
+#define RT5509_DRV_VER			"1.0.12_M"
 
 #ifdef CONFIG_RT_REGMAP
 #define RT5509_SIMULATE_DEVICE	0
@@ -90,6 +93,10 @@ struct rt5509_chip {
 #if RT5509_SIMULATE_DEVICE
 	void *sim;
 #endif /* #if RT5509_SIMULATE_DEVICE */
+#ifdef CONFIG_MTK_I2C_EXTENSION
+	u8 *rt_DMABuf_va;
+	dma_addr_t rt_DMABuf_pa;
+#endif
 	struct semaphore io_semaphore;
 	atomic_t power_count;
 	u8 chip_rev;
