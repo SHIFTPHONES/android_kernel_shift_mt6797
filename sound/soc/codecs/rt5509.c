@@ -216,7 +216,44 @@ static int rt5509_block_read(
 		memcpy(dest, chip->sim + offset, bytes);
 	return ret;
 #else
+#ifdef CONFIG_MTK_I2C_EXTENSION
+	struct i2c_client *i2c = (struct i2c_client *)client;
+	struct rt5509_chip *chip = i2c_get_clientdata(i2c);
+	struct i2c_adapter *adap = i2c->adapter;
+	u8 command = (u8)reg;
+	struct i2c_msg msg[2];
+	int ret = 0;
+
+	memset(msg, 0, sizeof(struct i2c_msg) * 2);
+	/* first message will be the register address */
+	msg[0].addr = (i2c->addr & I2C_MASK_FLAG);
+	msg[0].flags = 0;
+	msg[0].ext_flag = i2c->ext_flag;
+	msg[0].len = 1;
+	msg[0].timing = i2c->timing;
+	msg[0].buf = &command;
+	msg[1].addr = (i2c->addr & I2C_MASK_FLAG);
+	msg[1].ext_flag = i2c->ext_flag;
+	msg[1].flags = I2C_M_RD;
+	msg[1].len = bytes;
+	msg[1].timing = i2c->timing;
+	if (bytes > 1) {
+		msg[1].ext_flag |= I2C_DMA_FLAG;
+		msg[1].buf = (u8 *)(uintptr_t)chip->rt_DMABuf_pa;
+		ret = i2c_transfer(adap, msg, ARRAY_SIZE(msg));
+	} else
+		ret = i2c_smbus_read_byte_data(i2c, reg);
+	if (ret < 0)
+		return ret;
+	if (bytes > 1)
+		memcpy(dest, chip->rt_DMABuf_va, bytes);
+	else
+		*(u8 *)dest = (u8)ret;
+
+	return 0;
+#else
 	return i2c_smbus_read_i2c_block_data(client, reg, bytes, dest);
+#endif /* #ifdef CONFIG_MTK_I2C_EXTENSION */
 #endif /* #if RT5509_SIMULATE_DEVICE */
 }
 
@@ -236,7 +273,32 @@ static int rt5509_block_write(void *client, u32 reg,
 		memcpy(chip->sim + offset, src, bytes);
 	return ret;
 #else
+#ifdef CONFIG_MTK_I2C_EXTENSION
+	struct i2c_client *i2c = (struct i2c_client *)client;
+	struct rt5509_chip *chip = i2c_get_clientdata(i2c);
+	struct i2c_adapter *adap = i2c->adapter;
+	struct i2c_msg msg = {0};
+	int ret = 0;
+
+	msg.addr = (i2c->addr & I2C_MASK_FLAG);
+	msg.flags = 0;
+	msg.ext_flag = i2c->ext_flag;
+	msg.len = bytes + 1;
+	msg.timing = i2c->timing;
+	if (bytes > 1) {
+		chip->rt_DMABuf_va[0] = (u8)reg;
+		memcpy(chip->rt_DMABuf_va + 1, src, bytes);
+		msg.addr |= I2C_DMA_FLAG;
+		msg.buf = (u8 *)(uintptr_t)chip->rt_DMABuf_pa;
+		ret = i2c_transfer(adap, &msg, 1);
+	} else
+		ret = i2c_smbus_write_byte_data(i2c, reg, *(u8 *)src);
+	if (ret < 0)
+		pr_err("%s fail, ret = %d\n", __func__, ret);
+	return ret;
+#else
 	return i2c_smbus_write_i2c_block_data(client, reg, bytes, src);
+#endif /* #ifdef CONFIG_MTK_I2C_EXTENSION */
 #endif /* #if RT5509_SIMULATE_DEVICE */
 }
 
@@ -2114,6 +2176,16 @@ static int rt5509_i2c_probe(struct i2c_client *client,
 	chip->pdata = pdata;
 	chip->dev_cnt = dev_cnt;
 	i2c_set_clientdata(client, chip);
+
+#ifdef CONFIG_MTK_I2C_EXTENSION
+	chip->rt_DMABuf_va = dmam_alloc_coherent(&client->dev, 256, &chip->rt_DMABuf_pa,
+						 GFP_KERNEL);
+	if (!chip->rt_DMABuf_va) {
+		dev_err(&client->dev, "dma alloc error\n");
+		goto err_config_i2c;
+	}
+#endif /* #ifdef CONFIG_MTK_I2C_EXTENSION */
+
 #if RT5509_SIMULATE_DEVICE
 	ret = rt5509_calculate_total_size();
 	chip->sim = devm_kzalloc(&client->dev, ret, GFP_KERNEL);
@@ -2206,6 +2278,9 @@ err_sw_reset:
 	devm_kfree(chip->dev, chip->sim);
 err_simulate:
 #endif /* #if RT5509_SIMULATE_DEVICE */
+#ifdef CONFIG_MTK_I2C_EXTENSION
+err_config_i2c:
+#endif /* #ifdef CONFIG_MTK_I2C_EXTENSION */
 	devm_kfree(&client->dev, chip);
 err_parse_dt:
 	if (client->dev.of_node)
