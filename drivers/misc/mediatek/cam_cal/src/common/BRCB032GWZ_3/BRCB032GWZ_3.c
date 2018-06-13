@@ -48,7 +48,7 @@ static DEFINE_SPINLOCK(g_CAM_CALLock);/* for SMP */
 #define CAM_CAL_DEV_MAJOR_NUMBER 226
 
 /* CAM_CAL READ/WRITE ID */
-#define BRCB032GWZ_3_DEVICE_ID							0xA0
+#define BRCB032GWZ_3_DEVICE_ID							0xB0
 
 
 /* for init.rc static struct i2c_board_info __initdata kd_cam_cal_dev={ I2C_BOARD_INFO("CAM_CAL_S24CS64A", 0xAA>>1)}; */
