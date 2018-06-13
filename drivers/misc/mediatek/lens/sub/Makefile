@@ -30,6 +30,7 @@ subaf-y  += common/fm50af/FM50AF.o
 subaf-y  += common/bu6424af/BU6424AF.o
 subaf-y  += common/bu6429af/BU6429AF.o
 subaf-y  += common/dw9714af/DW9714AF.o
+subaf-y  += common/dw9763af/DW9763AF.o
 #pxs_add
 subaf-y  += common/dw9715af/DW9715AF.o
 subaf-y  += common/dw9814af/DW9814AF.o

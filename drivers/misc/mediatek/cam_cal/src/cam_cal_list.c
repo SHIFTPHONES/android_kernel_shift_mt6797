@@ -39,7 +39,7 @@
 #define MTK_MAX_CID_NUM 3  //modify 3->4
 unsigned int mtkCidList[MTK_MAX_CID_NUM] = {
 	0x00000002, //add for koda main camera
-	0x000000a0, //add for koda sub camera
+	0x000000dd, //add for koda sub camera
 	0x00000023, //pxs-add 20161116 for zkyd
 //	0x010b00ff,/*Single MTK Format*/
 //	0x020b00ff,/*Double MTK Format in One OTP/EEPRom - Legacy*/
@@ -48,7 +48,7 @@ unsigned int mtkCidList[MTK_MAX_CID_NUM] = {
 
 stCAM_CAL_FUNC_STRUCT g_camCalCMDFunc[] = {
 
-//	{CMD_BRCB032GWZ, brcb032gwz_selective_read_region},
+	{CMD_BRCB032GWZ, brcb032gwz_selective_read_region},
 	{CMD_CAT24C16, cat24c16_selective_read_region},
 //	{CMD_GT24C32A, gt24c32a_selective_read_region},
 
@@ -61,7 +61,7 @@ stCAM_CAL_LIST_STRUCT g_camCalList[] = {
 #if 1
 //#if defined(CONFIG_SHIFT6M_PROJECT )//pxs_add 20171024
  	{IMX230_SENSOR_ID, 0xA0, CMD_AUTO, cam_cal_check_mtk_cid}, //add 
-	{S5K3L8_SENSOR_ID, 0xA0, CMD_AUTO, cam_cal_check_mtk_cid},	
+	{S5K3L8_SENSOR_ID, 0xB0, CMD_BRCB032GWZ, cam_cal_check_mtk_cid},
 	{S5K3L8_SENSOR_ID_ZK, 0xA0, CMD_AUTO, cam_cal_check_mtk_cid},	
 #else
 	{OV23850_SENSOR_ID, 0xA0, CMD_AUTO, cam_cal_check_mtk_cid},

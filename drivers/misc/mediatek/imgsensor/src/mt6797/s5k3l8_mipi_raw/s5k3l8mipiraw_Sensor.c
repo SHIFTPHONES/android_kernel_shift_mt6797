@@ -281,7 +281,7 @@ static imgsensor_info_struct imgsensor_info = {
 	.sensor_output_dataformat = SENSOR_OUTPUT_FORMAT_RAW_Gr,//sensor output first pixel color
 	.mclk = 24,//mclk value, suggest 24 or 26 for 24Mhz or 26Mhz
 	.mipi_lane_num = SENSOR_MIPI_4_LANE,//mipi lane num
-	.i2c_addr_table = {0x20, 0xff},//0x5a , record sensor support all write id addr, only supprt 4must end with 0xff
+	.i2c_addr_table = {0x5a, 0xff},//0x5a , record sensor support all write id addr, only supprt 4must end with 0xff
     .i2c_speed = 300, // i2c read/write speed
 };
 
@@ -341,8 +341,8 @@ static SENSOR_WINSIZE_INFO_STRUCT imgsensor_winsize_info[10] =
 
 };
 #define RWB_ID_OFFSET 0x0F73
-#define EEPROM_READ_ID  0xA0
-#define EEPROM_WRITE_ID   0xA1
+#define EEPROM_READ_ID  0xB0
+#define EEPROM_WRITE_ID   0xB1
  
  static kal_uint16 is_RWB_sensor(void)
  {
@@ -370,7 +370,7 @@ static kal_uint16 read_cmos_sensor_byte2(kal_uint16 addr)
     char pu_send_cmd[2] = {(char)(addr >> 8) , (char)(addr & 0xFF) };
 
     //kdSetI2CSpeed(I2C_SPEED); // Add this func to set i2c speed by each sensor
-    iReadRegI2C(pu_send_cmd , 2, (u8*)&get_byte,1,0xa0);  //EEPROM_WRITE_ID
+    iReadRegI2C(pu_send_cmd , 2, (u8*)&get_byte,1,0xb0);  //EEPROM_WRITE_ID
     return get_byte;
 }
 
@@ -1492,7 +1492,7 @@ static kal_uint32 return_sensor_id(void)
 *
 *************************************************************************/
 //pxs-add 20161116
-int MCNX_MID=0xa0 ;
+int MCNX_MID=0xdd;
 static kal_uint16 S5K3L8_read_MID(void )
 {
 	kal_uint16 temp[2];
