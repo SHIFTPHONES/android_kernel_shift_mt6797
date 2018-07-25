@@ -101,7 +101,6 @@ static DEFINE_MUTEX(mt6311_lock_mutex);
 
 int g_mt6311_driver_ready = 0;
 int g_mt6311_hw_exist = 0;
-int g_mt6311_i2c_init = 0;
 
 unsigned int g_mt6311_cid = 0;
 /*
@@ -7190,13 +7189,8 @@ static int mt6311_driver_probe(struct i2c_client *client, const struct i2c_devic
 	new_client = client;
 
 	/*---------------------        */
+    /* force change GPIO to SDA/SCA mode */
 
-	if (g_mt6311_i2c_init == 0) {
-		/* i2c init fail, just return */
-		pr_err("please check dws if you need mt6311 i2c register\n");
-		err = -ENOMEM;
-		goto exit;
-	}
 	ret = mt6311_hw_component_detect();
 	if (ret < 0) {
 		err = -ENOMEM;
@@ -7375,13 +7369,10 @@ static int __init mt6311_init(void)
 
 		/*i2c_register_board_info(mt6311_BUSNUM, &i2c_mt6311, 1);*/
 
-	if (i2c_add_driver(&mt6311_driver) != 0) {
-		g_mt6311_i2c_init = 0;
-		PMICLOG1("[mt6311_init] failed to register mt6311 i2c driver.\n");
-	} else {
-		g_mt6311_i2c_init = 1;
-		PMICLOG1("[mt6311_init] Success to register mt6311 i2c driver.\n");
-	}
+		if (i2c_add_driver(&mt6311_driver) != 0)
+			PMICLOG1("[mt6311_init] failed to register mt6311 i2c driver.\n");
+		else
+			PMICLOG1("[mt6311_init] Success to register mt6311 i2c driver.\n");
 
 		/* mt6311 user space access interface*/
 		ret = platform_device_register(&mt6311_user_space_device);
