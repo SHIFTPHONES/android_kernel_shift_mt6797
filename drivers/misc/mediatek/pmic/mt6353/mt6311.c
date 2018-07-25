@@ -123,9 +123,13 @@ unsigned int mt6311_read_byte(unsigned char cmd, unsigned char *returnData)
 {
 	char cmd_buf[1] = { 0x00 };
 	char readData = 0;
-	int ret = 0;
+	int ret = 0, org = 0;
+	struct i2c_adapter *adap;
 
 	mutex_lock(&mt6311_i2c_access);
+	adap = i2c_get_adapter(3);
+	org = adap->timeout;
+	adap->timeout = 10;
 #if 1
 	new_client->ext_flag =
 	    ((new_client->
@@ -141,9 +145,11 @@ unsigned int mt6311_read_byte(unsigned char cmd, unsigned char *returnData)
 	cmd_buf[0] = cmd;
 	ret = i2c_master_send(new_client, &cmd_buf[0], (1 << 8 | 1));
 	if (ret < 0) {
-		PMICLOG1("[mt6311_read_byte] ret=%d\n", ret);
+		PMICLOG1("[mt6311_read_byte] ret=%d %d\n", ret, org);
 
 		new_client->ext_flag = 0;
+		adap->timeout = org;
+		i2c_put_adapter(adap);
 		mutex_unlock(&mt6311_i2c_access);
 		return ret;
 	}
@@ -153,6 +159,8 @@ unsigned int mt6311_read_byte(unsigned char cmd, unsigned char *returnData)
 
 	new_client->ext_flag = 0;
 
+	adap->timeout = org;
+	i2c_put_adapter(adap);
 	mutex_unlock(&mt6311_i2c_access);
 	return 1;
 }
@@ -160,9 +168,13 @@ unsigned int mt6311_read_byte(unsigned char cmd, unsigned char *returnData)
 unsigned int mt6311_write_byte(unsigned char cmd, unsigned char writeData)
 {
 	char write_data[2] = { 0 };
-	int ret = 0;
+	int ret = 0, org = 0;
+	struct i2c_adapter *adap;
 
 	mutex_lock(&mt6311_i2c_access);
+	adap = i2c_get_adapter(3);
+	org = adap->timeout;
+	adap->timeout = 10;
 
 	write_data[0] = cmd;
 	write_data[1] = writeData;
@@ -181,14 +193,18 @@ unsigned int mt6311_write_byte(unsigned char cmd, unsigned char writeData)
 
 	ret = i2c_master_send(new_client, write_data, 2);
 	if (ret < 0) {
-		PMICLOG1("[mt6311_write_byte] ret=%d\n", ret);
+		PMICLOG1("[mt6311_write_byte] ret=%d %d\n", ret, org);
 
 		new_client->ext_flag = 0;
+		adap->timeout = org;
+		i2c_put_adapter(adap);
 		mutex_unlock(&mt6311_i2c_access);
 		return ret;
 	}
 
 	new_client->ext_flag = 0;
+	adap->timeout = org;
+	i2c_put_adapter(adap);
 	mutex_unlock(&mt6311_i2c_access);
 	return 1;
 }
@@ -7189,7 +7205,6 @@ static int mt6311_driver_probe(struct i2c_client *client, const struct i2c_devic
 	new_client = client;
 
 	/*---------------------        */
-    /* force change GPIO to SDA/SCA mode */
 
 	ret = mt6311_hw_component_detect();
 	if (ret < 0) {
