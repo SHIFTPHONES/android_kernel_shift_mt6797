@@ -1,0 +1,11 @@
+# fetched Android config fragments
+README.md
+
+/OWNERS
+/android-4.14/android-*.config
+/android-4.4/android-*.config
+/android-4.9/android-*.config
+
+/o/*/android-*.config
+/o-mr1/*/android-*.config
+/p/*/android-*.config
