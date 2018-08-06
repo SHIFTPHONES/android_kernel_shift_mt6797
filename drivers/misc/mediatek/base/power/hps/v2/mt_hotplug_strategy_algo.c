@@ -590,7 +590,7 @@ HPS_END:
 				 str_criteria_limit, str_criteria_base, hps_sys.up_load_avg,
 				 hps_sys.down_load_avg, hps_sys.tlp_avg, hps_sys.rush_cnt,
 				 str_target);
-#ifdef _TRACE_
+#ifdef CONFIG_MTK_SCHED_TRACERS
 				trace_hps_update(hps_sys.action_id, str_online, hps_ctxt.cur_loads,
 						 hps_ctxt.cur_tlp, hps_ctxt.cur_iowait, str_hvytsk,
 						 str_criteria_limit, str_criteria_base,
