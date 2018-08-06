@@ -29,8 +29,12 @@
 #define MIN_BC_NUM              (4)
 #define MAX_LC_NUM              (3)
 
+#ifdef CONFIG_MTPROF
 extern void log_boot(char *str);
 #define TEEI_BOOT_FOOTPRINT(str) log_boot(str)
+#else
+#define TEEI_BOOT_FOOTPRINT(str) do {} while(0)
+#endif
 
 enum {
 	TEEI_BOOT_OK = 0,
