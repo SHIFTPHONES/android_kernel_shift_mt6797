@@ -69,6 +69,7 @@ static struct nla_policy nla_parse_wifi_policy[WIFI_ATTRIBUTE_ROAMING_STATE + 1]
 	[WIFI_ATTRIBUTE_ROAMING_STATE] = {.type = NLA_U32},
 };
 
+#if CFG_SUPPORT_GSCN
 static struct nla_policy nla_parse_gscan_policy[GSCAN_ATTRIBUTE_SIGNIFICANT_CHANGE_FLUSH + 1] = {
 	[GSCAN_ATTRIBUTE_NUM_BUCKETS] = {.type = NLA_U32},
 	[GSCAN_ATTRIBUTE_BASE_PERIOD] = {.type = NLA_U32},
@@ -93,6 +94,7 @@ static struct nla_policy nla_parse_gscan_policy[GSCAN_ATTRIBUTE_SIGNIFICANT_CHAN
 	[GSCAN_ATTRIBUTE_HOTLIST_FLUSH] = {.type = NLA_U8},
 	[GSCAN_ATTRIBUTE_SIGNIFICANT_CHANGE_FLUSH] = {.type = NLA_U8},
 };
+#endif
 
 static struct nla_policy nla_parse_offloading_policy[MKEEP_ALIVE_ATTRIBUTE_PERIOD_MSEC + 1] = {
 	[MKEEP_ALIVE_ATTRIBUTE_ID] = {.type = NLA_U8},
@@ -648,7 +650,6 @@ nla_put_failure:
 		kalMemFree(prWifiScanCmd, VIR_MEM_TYPE, sizeof(PARAM_WIFI_GSCAN_CMD_PARAMS));
 	return i4Status;
 }
-#endif
 
 int mtk_cfg80211_vendor_set_significant_change(struct wiphy *wiphy, struct wireless_dev *wdev,
 					       const void *data, int data_len)
@@ -889,7 +890,6 @@ nla_put_failure:
 	return i4Status;
 }
 
-#if CFG_SUPPORT_GSCN
 int mtk_cfg80211_vendor_enable_scan(struct wiphy *wiphy, struct wireless_dev *wdev, const void *data, int data_len)
 {
 	WLAN_STATUS rStatus = WLAN_STATUS_SUCCESS;
