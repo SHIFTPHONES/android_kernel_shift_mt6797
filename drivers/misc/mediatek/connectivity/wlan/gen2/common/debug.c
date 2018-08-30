@@ -1191,7 +1191,7 @@ void wlanDumpFwInforPrintBuff(PUINT8 pBuffer, UINT32 u4Len)
 {
 	UINT32 i = 0;
 	UINT32 idx = 0;
-	UINT8 aucOutput[WLAN_EMI_DEBUG_LINE_SIZE];
+	UINT8 aucOutput[WLAN_EMI_DEBUG_LINE_SIZE] = {0};
 
 	DBGLOG(RX, TRACE, "%s Start Print %d B!\n", __func__, u4Len);
 #if 0
@@ -1199,15 +1199,16 @@ void wlanDumpFwInforPrintBuff(PUINT8 pBuffer, UINT32 u4Len)
 #endif
 	for (i = 0; i < u4Len; i++) {
 		aucOutput[idx] = pBuffer[i];
-		if (pBuffer[i] == '\n') {
+		if (pBuffer[i] == '\n' || i == u4Len - 1) {
 			aucOutput[idx + 1] = '\0';
 			DBGLOG(RX, INFO, "%s", aucOutput);
 			idx = 0;
 		} else
 			idx++;
 
-		if (idx == WLAN_EMI_DEBUG_LINE_SIZE-1) {
+		if (idx == WLAN_EMI_DEBUG_LINE_SIZE - 1) {
 			pBuffer[idx] = '\0';
+			aucOutput[idx] = '\0';
 			DBGLOG(RX, INFO, "%s", aucOutput);
 			idx = 0;
 		}
