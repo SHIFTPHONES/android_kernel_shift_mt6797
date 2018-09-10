@@ -596,8 +596,8 @@ static int icm206xx_accel_init_client(struct i2c_client *client, bool enable)
 	if (res != ICM206XX_SUCCESS)
 		return res;
 
-	/* Set 5ms(200hz) sample rate */
-	res = icm206xx_share_SetSampleRate(ICM206XX_SENSOR_TYPE_ACC, 5000000, false);
+	/* Set 2ms(500hz) sample rate */
+	res = icm206xx_share_SetSampleRate(ICM206XX_SENSOR_TYPE_ACC, 2000000, false);
 	if (res != ICM206XX_SUCCESS)
 		return res;
 
@@ -612,7 +612,7 @@ static int icm206xx_accel_init_client(struct i2c_client *client, bool enable)
 		return res;
 	}
 
-	ACC_LOG("icm206xx_accel_init_client OK!\n");
+	ACC_LOG("%s: OK!\n", __func__);
 
 	return ICM206XX_SUCCESS;
 }
@@ -1127,24 +1127,24 @@ static int icm206xx_accel_enable_nodata(int en)
 {
 	int res = 0;
 
-	if (1 == en) {
+	if (!en)
+		power_acc = false;
+	else
 		power_acc = true;
 
-	}
-	if (0 == en) {
-		power_acc = false;
-		icm206xx_share_SetSampleRate(ICM206XX_SENSOR_TYPE_ACC, 0, false);
-	}
-
 	res = icm206xx_share_EnableSensor(ICM206XX_SENSOR_TYPE_ACC, power_acc);
-	res = icm206xx_share_SetPowerMode(ICM206XX_SENSOR_TYPE_ACC, power_acc);
-
 	if (res != ICM206XX_SUCCESS) {
 		ACC_LOG("fail!\n");
 		return -1;
 	}
 
-	ACC_LOG("icm206xx_accel_enable_nodata OK!\n");
+	res = icm206xx_share_SetPowerMode(ICM206XX_SENSOR_TYPE_ACC, power_acc);
+	if (res != ICM206XX_SUCCESS) {
+		ACC_LOG("fail!\n");
+		return -1;
+	}
+
+	ACC_LOG("%s: OK!\n", __func__);
 
 	return 0;
 }
@@ -1188,21 +1188,13 @@ static const struct of_device_id accel_of_match[] = {
 
 static int icm206xx_batch(int flag, int64_t samplingPeriodNs, int64_t maxBatchReportLatencyNs)
 {
+	ACC_LOG("%s is called [ns:%lld]\n", __func__, samplingPeriodNs);
+	icm206xx_share_SetSampleRate(ICM206XX_SENSOR_TYPE_ACC, samplingPeriodNs, false);
 	return 0;
-
 }
 static int icm206xx_flush(void)
 {
-	int err = 0;
-	/*Only flush after sensor was enabled*/
-	if (!power_acc) {
-		obj_i2c_data->flush = true;
-		return 0;
-	}
-	err = acc_flush_report();
-	if (err >= 0)
-		obj_i2c_data->flush = false;
-	return err;
+	return acc_flush_report();
 }
 
 /************************* For MTK factory mode ************************************/
