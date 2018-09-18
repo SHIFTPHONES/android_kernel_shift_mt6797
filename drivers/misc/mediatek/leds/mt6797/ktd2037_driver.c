@@ -1,193 +1,168 @@
 #include <linux/types.h>
 #include <linux/init.h>     /* For init/exit macros */
 #include <linux/module.h>   /* For MODULE_ marcros  */
-#include <linux/platform_device.h>
 #include <linux/i2c.h>
 #include <linux/slab.h>
-#include <linux/delay.h>
-//#include <linux/ioctl.h>
+#include <linux/sysfs.h>
 
-#include <linux/interrupt.h>
-#include <linux/irq.h>
-#include <linux/miscdevice.h>
-#include <linux/uaccess.h>
-#include <linux/input.h>
-#include <linux/workqueue.h>
-#include <linux/kobject.h>
+#define LIGHTS_DBG_ON  0
 
+#define KTD_I2C_NAME	"ktd2037"
 
-#include <linux/atomic.h>
-#include <linux/wakelock.h>
+#define MAX_CURRENT 0x9
 
+#define LIGHT_FLASH_NONE            0
 
-#ifdef CONFIG_OF
-#include <linux/of.h>
-#include <linux/of_irq.h>
-#include <linux/of_address.h>
-#endif
+/**
+ * To flash the light at a given rate, set flashMode to LIGHT_FLASH_TIMED,
+ * and then flashOnMS should be set to the number of milliseconds to turn
+ * the light on, followed by the number of milliseconds to turn the light
+ * off.
+ */
+#define LIGHT_FLASH_TIMED           1
 
+/**
+ * To flash the light using hardware assist, set flashMode to
+ * the hardware mode.
+ */
+#define LIGHT_FLASH_HARDWARE        2
 
-#define KTD_I2C_NAME			"ktd2037"
-#define DEV_NAME 		"ktd2037_dev"
-#define	CLASS_NAME		"ktd2037_class"
-//#define MAJOR_DEV_NUM		252	//debug
+/* Registers */
+#define KTD_REG_DRY_FLASH_PERIOD	0x01
+#define KTD_REG_FLASH_COUNTER		0x02 // No of times the led lits?
+#define KTD_REG_LED_ID				0x04
+#define KTD_REG_CURRENT_RED			0x06
+#define KTD_REG_CURRENT_BLUE		0x07
+#define KTD_REG_CURRENT_GREEN		0x08
 
-static struct class *ktd2037_class;
+#define LED_BASE		0x40
+#define LED_RED			LED_BASE + (1 << 0)
+#define LED_RED_TIMER	LED_BASE + (1 << 1)
+#define LED_BLUE		LED_BASE + (1 << 2)
+#define LED_BLUE_TIMER	LED_BASE + (1 << 3)
+#define LED_GREEN		LED_BASE + (1 << 4)
+#define LED_GREEN_TIMER	LED_BASE + (1 << 5)
 
 struct ktd2037_priv{
 	struct i2c_client *client;
+	int operation;
+	unsigned int led_id;
+	unsigned int curr;
+	int flash_mode;
+	unsigned int flash_period;
+	u8  red_brightness;
+	u8  green_brightness;
+	u8  blue_brightness;
 };
 
 static struct i2c_client * ktd2037_client = NULL;
 static struct ktd2037_priv *ktd2037_obj = NULL;
-unsigned long value = 0;
 
 static int ktd2037_i2c_probe(struct i2c_client *client, const struct i2c_device_id *id);
 static int ktd2037_i2c_remove(struct i2c_client *client);
 
-void ktd2037_lowbattery_breath_leds(void){
-	/* battery level<15%=>Flash Red
-	 * flash time period: 2.5s, flash: 0.5s
-	 * reg5 = 0xaa, reg1 = 0x12
-	 */
-        printk("ktd2037_lowbattery_breath_leds\n");
-	i2c_smbus_write_byte_data(ktd2037_client, 0x06, 0x09);//set current is 2.5mA
-	i2c_smbus_write_byte_data(ktd2037_client, 0x01, 0x12);//dry flash period
-	i2c_smbus_write_byte_data(ktd2037_client, 0x02, 0x00);//reset internal counter
-	i2c_smbus_write_byte_data(ktd2037_client, 0x04, 0x42);//allocate led1 to timer1;
-	i2c_smbus_write_byte_data(ktd2037_client, 0x02, 0x32);//led flashing(curerent ramp-up and down countinuously)
+void ktd2037_led_off(void)
+{
+#ifdef LIGHTS_DBG_ON
+	printk("%s\n", __func__);
+#endif
+	// turn on led when 0x02 is not 0x00,there is set to same as breath leds
+	i2c_smbus_write_byte_data(ktd2037_client, KTD_REG_CURRENT_RED, 0x00); // set current is 0.125mA
+	i2c_smbus_write_byte_data(ktd2037_client, KTD_REG_LED_ID, 0x00);      // turn off leds
+	i2c_smbus_write_byte_data(ktd2037_client, 0x00, 0x05);                // enable auto blink
 }
 
-void ktd2037_battery_charging_low(void){
-	//turn on led when battery level<15% and charging=>solid red
-    printk("ktd2037_battery_charging_low\n");
-	i2c_smbus_write_byte_data(ktd2037_client, 0x06, 0x09);//set current
-	i2c_smbus_write_byte_data(ktd2037_client, 0x04, 0x41);//turn on led1;
-	//i2c_smbus_write_byte_data(ktd2037_client, 0x04, 0x41);//turn on all of leds;
+u8 brightness_to_steps(u8 b)
+{
+	return (b * MAX_CURRENT) / 255;
 }
 
-void ktd2037_battery_charging_middle(void){
-	//turn on led when 15%<battert level<=90 and charging=>solid orange(Red+Green)
-    printk("ktd2037_battery_charging_middle\n");
-	i2c_smbus_write_byte_data(ktd2037_client, 0x06, 0x09);//set current
-	i2c_smbus_write_byte_data(ktd2037_client, 0x04, 0x41);//turn on led1;
-    //i2c_smbus_write_byte_data(ktd2037_client, 0x08, 0x00);//set current is 0.125mA
-	//i2c_smbus_write_byte_data(ktd2037_client, 0x04, 0x51);//turn on LED1 and LED3;
+void ktd2037_turn_off_all_leds(void)
+{
+#ifdef LIGHTS_DBG_ON
+	printk("%s\n", __func__);
+#endif
+	i2c_smbus_write_byte_data(ktd2037_client, 0x00, 0x05);           // initialization LED off
+	i2c_smbus_write_byte_data(ktd2037_client, KTD_REG_LED_ID, 0x00); // initialization LED off
+	i2c_smbus_write_byte_data(ktd2037_client, KTD_REG_LED_ID, 0x00); // turn off all LEDs
 }
 
-void ktd2037_battery_charging_High(void){
-	//turn on led when battery level>=100% and charging=>solid Green
-        printk("ktd2037_battery_charging_High\n");
-	i2c_smbus_write_byte_data(ktd2037_client, 0x08, 0x06);//set current
-	i2c_smbus_write_byte_data(ktd2037_client, 0x04, 0x50);//turn on led3;
-}
+void ktd2037_execute_operation(struct ktd2037_priv *obj)
+{
+	u8 led_id = 0;
+	u8 cr = brightness_to_steps(obj->red_brightness);
+	u8 cg = brightness_to_steps(obj->green_brightness);
+	u8 cb = brightness_to_steps(obj->blue_brightness);
+	u8 period = 0;
 
-void ktd2037_events_breath_leds(void){
-	/* battery level<15%=>Flash Red
-	 * flash time period: 2.5s, , flash:0.5s 
-	 * reg5 = 0xaa, reg1 = 0x30	
-	 */
-        printk("ktd2037_events_breath_leds\n");
-	i2c_smbus_write_byte_data(ktd2037_client, 0x07, 0x12);//set current
-	i2c_smbus_write_byte_data(ktd2037_client, 0x01, 0x12);//dry flash period
-	i2c_smbus_write_byte_data(ktd2037_client, 0x02, 0x00);//reset internal counter
-	i2c_smbus_write_byte_data(ktd2037_client, 0x04, 0x48);//allocate led2 to timer1;
-	i2c_smbus_write_byte_data(ktd2037_client, 0x02, 0x32);//led flashing(curerent ramp-up and down countinuously)
-}
+	if (!obj->red_brightness && !obj->green_brightness && !obj->blue_brightness) {
+		ktd2037_turn_off_all_leds();
+		return;
+	}
 
-void ktd2037_initialization_LED_off(void){
-//reset IC
-        printk("ktd2037_initialization_LED_off\n");
+	switch(obj->flash_mode) {
+	case LIGHT_FLASH_TIMED:
+		/* atm only fixed period, until we guess how to set it up */
+	case LIGHT_FLASH_HARDWARE:
+		if (obj->red_brightness) {
+			led_id |= LED_RED_TIMER;
+		}
+		if (obj->green_brightness) {
+			led_id |= LED_GREEN_TIMER;
+		}
+		if (obj->blue_brightness) {
+			led_id |= LED_BLUE_TIMER;
+		}
+		period = 0x12;
+		break;
+
+	default:
+		if (obj->red_brightness) {
+			led_id |= LED_RED;
+		}
+		if (obj->green_brightness) {
+			led_id |= LED_GREEN;
+		}
+		if (obj->blue_brightness) {
+			led_id |= LED_BLUE;
+		}
+	}
+
+#ifdef LIGHTS_DBG_ON
+	printk("%s led_id(%x) current(%x,%x,%x) period(%x)\n", __func__, led_id, cr, cg, cb, period);
+#endif
+
 	i2c_smbus_write_byte_data(ktd2037_client, 0x00, 0x05);// initialization LED off
-	i2c_smbus_write_byte_data(ktd2037_client, 0x04, 0x00);// initialization LED off
-        i2c_smbus_write_byte_data(ktd2037_client, 0x09, 0x06);// disable auto blink
+	i2c_smbus_write_byte_data(ktd2037_client, KTD_REG_LED_ID, 0x00);// initialization LED off
+	i2c_smbus_write_byte_data(ktd2037_client, 0x09, 0x06);// disable auto blink
+
+	if (period) {
+		/* flashing */
+		i2c_smbus_write_byte_data(ktd2037_client, KTD_REG_CURRENT_RED, cr);//set current
+		i2c_smbus_write_byte_data(ktd2037_client, KTD_REG_CURRENT_GREEN, cg);//set current
+		i2c_smbus_write_byte_data(ktd2037_client, KTD_REG_CURRENT_BLUE, cb);//set current
+		i2c_smbus_write_byte_data(ktd2037_client, KTD_REG_DRY_FLASH_PERIOD, period);//dry flash period
+		i2c_smbus_write_byte_data(ktd2037_client, KTD_REG_FLASH_COUNTER, 0x00);//reset internal counter
+		i2c_smbus_write_byte_data(ktd2037_client, KTD_REG_LED_ID, led_id);//turn on led
+		i2c_smbus_write_byte_data(ktd2037_client, KTD_REG_FLASH_COUNTER, 0x32);//led flashing(current ramp-up and down countinuously)
+	} else {
+		/* solid color */
+		i2c_smbus_write_byte_data(ktd2037_client, KTD_REG_CURRENT_RED, cr);//set current
+		i2c_smbus_write_byte_data(ktd2037_client, KTD_REG_CURRENT_GREEN, cg);//set current
+		i2c_smbus_write_byte_data(ktd2037_client, KTD_REG_CURRENT_BLUE, cb);//set current
+		i2c_smbus_write_byte_data(ktd2037_client, KTD_REG_LED_ID, led_id);//turn on led
+	}
 }
-
-
-void ktd2037_reset(void){
-	//enable auto blink
-	i2c_smbus_write_byte_data(ktd2037_client, 0x00, 0x05);//enable auto blink
-}
-
- void ktd2037_led_off(void){
-	//turn on led when 0x02 is not 0x00,there is set to same as breath leds
-	i2c_smbus_write_byte_data(ktd2037_client, 0x06, 0x00);//set current is 0.125mA
-	i2c_smbus_write_byte_data(ktd2037_client, 0x04, 0x00);//turn off leds
-	i2c_smbus_write_byte_data(ktd2037_client, 0x00, 0x05);//enable auto blink
-}
-
-void ktd2037_breath_leds_time(int blink){
-	//set breath led flash time from blink
-	int period, flashtime;
-	period = (blink >> 8) & 0xff;
-	flashtime = blink & 0xff;
-	printk("ktd2037 led write blink = %x, period = %x, flashtime = %x\n", blink, period, flashtime);
-	i2c_smbus_write_byte_data(ktd2037_client, 0x00, 0x20);// initialization LED off
-	i2c_smbus_write_byte_data(ktd2037_client, 0x04, 0x00);// initialization LED off
-	i2c_smbus_write_byte_data(ktd2037_client, 0x06, 0x09);//set current
-	i2c_smbus_write_byte_data(ktd2037_client, 0x05, period);//rase time
-	i2c_smbus_write_byte_data(ktd2037_client, 0x01, flashtime);//dry flash period
-	i2c_smbus_write_byte_data(ktd2037_client, 0x02, 0x00);//reset internal counter
-	i2c_smbus_write_byte_data(ktd2037_client, 0x04, 0x42);//allocate led1 to timer1;change 02-> 42 
-	i2c_smbus_write_byte_data(ktd2037_client, 0x02, 0x56);//led flashing(curerent ramp-up and down countinuously)
-
-}
-
-void ktd2037_red_led_turn_on(void){
-	i2c_smbus_write_byte_data(ktd2037_client, 0x00, 0x05);// initialization LED off
-	i2c_smbus_write_byte_data(ktd2037_client, 0x04, 0x00);// initialization LED off
-        i2c_smbus_write_byte_data(ktd2037_client, 0x09, 0x06);// disable auto blink
-	i2c_smbus_write_byte_data(ktd2037_client, 0x06, 0x09);//set current
-	i2c_smbus_write_byte_data(ktd2037_client, 0x04, 0x41);//turn on led1;
-}
-
-
-void ktd2037_blue_led_turn_on(void){
-	i2c_smbus_write_byte_data(ktd2037_client, 0x00, 0x05);// initialization LED off
-	i2c_smbus_write_byte_data(ktd2037_client, 0x04, 0x00);// initialization LED off
-        i2c_smbus_write_byte_data(ktd2037_client, 0x09, 0x06);// disable auto blink
-	i2c_smbus_write_byte_data(ktd2037_client, 0x07, 0x12);//set current
-	i2c_smbus_write_byte_data(ktd2037_client, 0x04, 0x44);//turn on led2;
-}
-
-void ktd2037_green_led_turn_on(void){
-	i2c_smbus_write_byte_data(ktd2037_client, 0x00, 0x05);// initialization LED off
-	i2c_smbus_write_byte_data(ktd2037_client, 0x04, 0x00);// initialization LED off
-        i2c_smbus_write_byte_data(ktd2037_client, 0x09, 0x06);// disable auto blink
-	i2c_smbus_write_byte_data(ktd2037_client, 0x08, 0x05);//set current
-	i2c_smbus_write_byte_data(ktd2037_client, 0x04, 0x50);//turn on led3;
-}
-
-
-void ktd2037_red_green_turn_on(void){
-/*
-	i2c_smbus_write_byte_data(ktd2037_client, 0x00, 0x05);// initialization LED off
-	i2c_smbus_write_byte_data(ktd2037_client, 0x04, 0x00);// initialization LED off
-        i2c_smbus_write_byte_data(ktd2037_client, 0x09, 0x06);// disable auto blink
-	i2c_smbus_write_byte_data(ktd2037_client, 0x06, 0x13);//set current is 2.5mA
-        i2c_smbus_write_byte_data(ktd2037_client, 0x08, 0x00);//set current is 0.125mA
-	i2c_smbus_write_byte_data(ktd2037_client, 0x04, 0x51);//turn on LED1 and LED3;
-*/
-}
-
-void ktd2037_turn_off_LED(void){
-	i2c_smbus_write_byte_data(ktd2037_client, 0x00, 0x05);// initialization LED off
-	i2c_smbus_write_byte_data(ktd2037_client, 0x04, 0x00);// initialization LED off
-	i2c_smbus_write_byte_data(ktd2037_client, 0x04, 0x00);//turn off all LEDs;
-}
-
 
 static const struct i2c_device_id ktd2037_id[] = {
 	{KTD_I2C_NAME, 0},
-	{ }
+	{ },
 };
-
 
 static struct of_device_id ktd2037_match_table[] = {
-        { .compatible = "mediatek,led_ktd2037",},
-        { },
+	{ .compatible = "mediatek,led_ktd2037",},
+	{ },
 };
-
 
 static struct i2c_driver ktd2037_driver = {
 	.driver = {
@@ -203,133 +178,148 @@ static struct i2c_driver ktd2037_driver = {
 /****************************************************************************** 
  * Function Configuration
 ******************************************************************************/
-static int ktd2037_open(struct inode *inode, struct file *file)
+static ssize_t ktd2037_show_flash_mode(struct device *dev, struct device_attribute *attr, char *buf)
 {
-	file->private_data = ktd2037_client;
+	struct i2c_client *client;
+	struct ktd2037_priv *obj = NULL;
 
-	if (!file->private_data)
-	{
-		printk("null pointer!!\n");
+	client = to_i2c_client(dev);
+	obj = i2c_get_clientdata(client);
+
+	return sprintf(buf, "%d\n", obj->flash_mode);
+}
+
+static ssize_t ktd2037_store_flash_mode(struct device *dev, struct device_attribute *attr, const char *buf, size_t count)
+{
+	int ret;
+	struct i2c_client *client;
+	struct ktd2037_priv *obj = NULL;
+	u8 value;
+
+	client = to_i2c_client(dev);
+	obj = i2c_get_clientdata(client);
+
+	ret = kstrtou8(buf, 10, &value);
+	if (ret < 0) {
+		dev_err(dev, "%s: value too large!\n", __func__);
+		return ret;
+	}
+	obj->flash_mode = value;
+
+#ifdef LIGHTS_DBG_ON
+	printk("%s: value(%d)\n", __func__, value);
+#endif
+
+	return count;
+}
+
+static ssize_t ktd2037_show_flash_period(struct device *dev, struct device_attribute *attr, char *buf)
+{
+	struct i2c_client *client;
+	struct ktd2037_priv *obj = NULL;
+
+	client = to_i2c_client(dev);
+	obj = i2c_get_clientdata(client);
+
+	return sprintf(buf, "%d\n", obj->flash_period);
+}
+
+static ssize_t ktd2037_store_flash_period(struct device *dev, struct device_attribute *attr, const char *buf, size_t count)
+{
+	int ret;
+	struct i2c_client *client;
+	struct ktd2037_priv *obj = NULL;
+	unsigned int value;
+
+	client = to_i2c_client(dev);
+	obj = i2c_get_clientdata(client);
+
+	ret = kstrtouint(buf, 10, &value);
+	if (ret < 0) {
+		dev_err(dev, "%s: value too large!\n", __func__);
+		return ret;
+	}
+	obj->flash_period = value;
+
+#ifdef LIGHTS_DBG_ON
+	printk("%s: value(%d)\n", __func__, value);
+#endif
+
+	return count;
+}
+
+static ssize_t ktd2037_show_brightness(struct device *dev, struct device_attribute *attr, char *buf)
+{
+	struct i2c_client *client;
+	struct ktd2037_priv *obj = NULL;
+
+	client = to_i2c_client(dev);
+	obj = i2c_get_clientdata(client);
+
+	return sprintf(buf, "R,G,B (%d, %d, %d)\n", obj->red_brightness, obj->green_brightness, obj->blue_brightness);
+}
+
+static ssize_t ktd2037_store_brightness(struct device *dev, struct device_attribute *attr, const char *buf, size_t count)
+{
+	int ret;
+	struct i2c_client *client;
+	struct ktd2037_priv *obj = NULL;
+	int red_brightness, green_brightness, blue_brightness;
+
+	client = to_i2c_client(dev);
+	obj = i2c_get_clientdata(client);
+	ret = sscanf(buf, "%d:%d:%d", &red_brightness, &green_brightness, &blue_brightness);
+	if (ret != 3) {
+		dev_err(dev, "%s: unable to parse values!\n", __func__);
 		return -EINVAL;
 	}
-	
-	return nonseekable_open(inode, file);
-}
-/*----------------------------------------------------------------------------*/
-static ssize_t ktd2037_read(struct file *file, char __user *buf, size_t size, loff_t * offset)
-{
-	return 0;
-}
-/*----------------------------------------------------------------------------*/
-static ssize_t ktd2037_write(struct file *file, const char __user *buf, size_t size, loff_t *offset)
-{
 
-	static int rec_data[2];
-	memset(rec_data, 0, 2);  //
-
-	
-	if (copy_from_user(rec_data, buf, 1))  
-	{  
-		return -EFAULT;  
-	}  
-	printk("ktd2037_write:rec_data[0]=%d\n",rec_data[0]);
-	 if(rec_data[0] == 0){
-		ktd2037_initialization_LED_off();
-	 }
-	 else if( rec_data[0] == 1){
-		ktd2037_lowbattery_breath_leds();
-	 }
-	 else if( rec_data[0] == 2){
-		ktd2037_battery_charging_low();
-	 }
-	 else if( rec_data[0] == 3){
-		ktd2037_battery_charging_middle();
-	 }
-	 else if( rec_data[0] == 4){
-		ktd2037_battery_charging_High();
-	 }
-	 else if( rec_data[0] == 5){
-		ktd2037_events_breath_leds();
-	 }
-     else if( rec_data[0] == 6){
-		ktd2037_turn_off_LED();
-	 }
-	 else if( rec_data[0] == 7){
-		ktd2037_red_led_turn_on();
-	 }
-	 else if( rec_data[0] == 8){
-		ktd2037_blue_led_turn_on();
-	 }
-	 else if( rec_data[0] == 9){
-		ktd2037_green_led_turn_on();
-	 }
-	 else if( rec_data[0] == 10){
-		ktd2037_red_green_turn_on();
-	 }
-	else
-        {
-                ktd2037_turn_off_LED();
+	if (red_brightness > 255 || green_brightness > 255 || blue_brightness > 255) {
+		dev_err(dev, "%s: values too high (> 255)!\n", __func__);
+		return -EINVAL;
 	}
 
-	
-    return 1;
-}
-/*----------------------------------------------------------------------------*/
-static int ktd2037_release(struct inode *inode, struct file *file)
-{
-	file->private_data = NULL;
-	return 0;
-}
+	obj->red_brightness = red_brightness;
+	obj->green_brightness = green_brightness;
+	obj->blue_brightness = blue_brightness;
 
-/*----------------------------------------------------------------------------*/
-static long ktd2037_unlocked_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
-{
-	 //int ret;
-	 //void __user *ptr = (void __user*) arg;
-#if 0
-	 //switch(cmd)
-	// {
-	 	//case ENCRYPT_IOCTL_GET_CIT_RESULT:
-	 			printk("[mly] ENCRYPT_IOCTL_GET_CIT_RESULT\n");
-				if(copy_to_user(ptr, &cit_result, sizeof(cit_result)))//返回结果：芯片正常1, 不正常0
-				{
-					printk("[mly]copy_to_user failed !\n");
-					return -3;					
-				}
-				//break;
-	 	
-		//default :break;
-
-	// }
+#ifdef LIGHTS_DBG_ON
+	printk("%s: R,G,B (%d, %d, %d)\n", __func__, obj->red_brightness, obj->green_brightness, obj->blue_brightness);
 #endif
-	 printk("[mly]    ioctl   end   =====================\n");
 
-	 return 0;
+	ktd2037_execute_operation(obj);
+
+	return count;
 }
-/*----------------------------------------------------------------------------*/
-static struct file_operations ktd2037_fops = {
-	.owner = THIS_MODULE,
-	.open = ktd2037_open,
-	.read  = ktd2037_read,
-	.write = ktd2037_write,
-	.release = ktd2037_release,
-	.unlocked_ioctl = ktd2037_unlocked_ioctl,
-};
-/*----------------------------------------------------------------------------*/
-static struct miscdevice ktd2037_device = {
-	.minor = MISC_DYNAMIC_MINOR,
-	.name = DEV_NAME,
-	.fops = &ktd2037_fops,
+
+
+static DEVICE_ATTR(flash_mode, S_IRUGO | S_IWUSR, ktd2037_show_flash_mode, ktd2037_store_flash_mode);
+static DEVICE_ATTR(flash_period, S_IRUGO | S_IWUSR, ktd2037_show_flash_period, ktd2037_store_flash_period);
+static DEVICE_ATTR(brightness, S_IRUGO | S_IWUSR, ktd2037_show_brightness, ktd2037_store_brightness);
+
+static struct attribute *ktd2037_attributes[] = {
+	&dev_attr_flash_mode.attr,
+	&dev_attr_flash_period.attr,
+	&dev_attr_brightness.attr,
+	NULL,
 };
 
+static struct attribute_group ktd2037_attr_group = {
+	.name = "ktd2037",
+	.attrs = ktd2037_attributes,
+};
 
 static int ktd2037_i2c_probe(struct i2c_client *client, const struct i2c_device_id *id)
 {
 
 	struct ktd2037_priv *obj = NULL;
 	int err;
-	printk("[mly]  ######enter ktd2037_i2c_probe  !!###### \n");
-	obj = kzalloc(sizeof(*obj), GFP_KERNEL);
+
+#ifdef LIGHTS_DBG_ON
+	printk("%s: begin\n", __func__);
+#endif
+
+	obj = devm_kzalloc(&client->dev, sizeof(*obj), GFP_KERNEL);
 	if (obj == NULL) {
 		err = -ENOMEM;
 		goto exit;
@@ -339,58 +329,33 @@ static int ktd2037_i2c_probe(struct i2c_client *client, const struct i2c_device_
 	ktd2037_client = client;
 	i2c_set_clientdata(client, obj);
 
-	if((err = misc_register(&ktd2037_device)))
-	{
-		printk("ktd2037_device register failed\n");
+	err = sysfs_create_group(&client->dev.kobj, &ktd2037_attr_group);
+	if (err) {
+		printk("%s: sysfs_create_group failed\n", __func__);
 		goto exit;
-	}	
-#if 0
-	ktd2037_class = class_create(THIS_MODULE, CLASS_NAME);
-	if (IS_ERR(ktd2037_class))
-	{
-		printk("ktd2037_class create failed\n");
-		goto exit0;
 	}
-	device_create(ktd2037_class, NULL, MKDEV(MAJOR_DEV_NUM, 0), NULL, DEV_NAME);
-#endif
-	printk("[mly]ktd2037 i2c_probe end!\n");
-	return err;
-#if 0
-exit0:
-	class_destroy(ktd2037_class);
-#endif
-exit:
-	if(obj)
-	{
-		kfree(obj);
-	}
-	ktd2037_client = NULL;
-	printk("[mly]ktd2037 i2c_probe failed! must some error occurs\n");
-	return err;
-}
 
-unsigned int unpack32( unsigned char *src )
-{
-	return (
-		(( unsigned int) src[0] )<< 24
-		| (( unsigned int) src[1] )<< 16
-		| (( unsigned int) src[2] )<< 8
-		| ( unsigned int) src[3]
-	);
+#ifdef LIGHTS_DBG_ON
+	printk("%s: end\n", __func__);
+#endif
+
+	return err;
+
+exit:
+	ktd2037_client = NULL;
+	printk("%s: failed!\n", __func__);
+	return err;
 }
 
 /*----------------------------------------------------------------------------*/
 static int ktd2037_i2c_remove(struct i2c_client *client)
 {
-	int err;
-	printk("[mly]  ######ktd2037_i2c_remove !!###### \n");
-	class_destroy(ktd2037_class);
-	if((err = misc_deregister(&ktd2037_device)))
-	{
-		printk("misc_deregister fail: %d\n", err);    
-	}
+#ifdef LIGHTS_DBG_ON
+	printk("%s:n", __func__);
+#endif
 
-	
+	sysfs_remove_group(&client->dev.kobj, &ktd2037_attr_group);
+
 	ktd2037_client = NULL;
 	i2c_unregister_device(client);
 	kfree(i2c_get_clientdata(client));
@@ -400,21 +365,21 @@ static int ktd2037_i2c_remove(struct i2c_client *client)
 static int __init ktd2037_init(void)
 {
 	int err;
-	printk("%s\n",__func__);
 	err = i2c_add_driver(&ktd2037_driver);
 	if (err) {
-		printk("ktd2037 driver failed "
-		       "(errno = %d)\n", err);
+		printk("%s: ktd2037 driver failed (errno = %d)\n", __func__, err);
 	} else {
-		printk( "Successfully added driver %s\n",
-		          ktd2037_driver.driver.name);
+		printk("%s: Successfully added driver \"%s\"\n", __func__, ktd2037_driver.driver.name);
 	}
 	return err;
 }
 
 static void __exit ktd2037_exit(void)
 {
+#ifdef LIGHTS_DBG_ON
 	printk("%s\n",__func__);
+#endif
+	ktd2037_turn_off_all_leds();
 	i2c_del_driver(&ktd2037_driver);
 }
 
@@ -422,4 +387,4 @@ module_init(ktd2037_init);
 module_exit(ktd2037_exit);
 
 MODULE_LICENSE("GPL");
-
+MODULE_AUTHOR("Javi Ferrer @ SHIFTPHONES");
