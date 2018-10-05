@@ -61,15 +61,20 @@ static struct ktd2037_priv *ktd2037_obj = NULL;
 static int ktd2037_i2c_probe(struct i2c_client *client, const struct i2c_device_id *id);
 static int ktd2037_i2c_remove(struct i2c_client *client);
 
+#define I2C_WRITE(reg, val) \
+	if (i2c_smbus_write_byte_data(ktd2037_client, reg, val) != 0) { \
+		printk("%s: I2C_WRITE error reg(0x%x) val(0x%x)\n", __func__, reg, val); \
+	}
+
 void ktd2037_led_off(void)
 {
 #ifdef LIGHTS_DBG_ON
 	printk("%s\n", __func__);
 #endif
 	// turn on led when 0x02 is not 0x00,there is set to same as breath leds
-	i2c_smbus_write_byte_data(ktd2037_client, KTD_REG_CURRENT_RED, 0x00); // set current is 0.125mA
-	i2c_smbus_write_byte_data(ktd2037_client, KTD_REG_LED_ID, 0x00);      // turn off leds
-	i2c_smbus_write_byte_data(ktd2037_client, 0x00, 0x05);                // enable auto blink
+	I2C_WRITE(KTD_REG_CURRENT_RED, 0x00); // set current is 0.125mA
+	I2C_WRITE(KTD_REG_LED_ID, 0x00);      // turn off leds
+	I2C_WRITE(0x00, 0x05);                // enable auto blink
 }
 
 u8 brightness_to_steps(u8 b)
@@ -82,9 +87,9 @@ void ktd2037_turn_off_all_leds(void)
 #ifdef LIGHTS_DBG_ON
 	printk("%s\n", __func__);
 #endif
-	i2c_smbus_write_byte_data(ktd2037_client, 0x00, 0x05);           // initialization LED off
-	i2c_smbus_write_byte_data(ktd2037_client, KTD_REG_LED_ID, 0x00); // initialization LED off
-	i2c_smbus_write_byte_data(ktd2037_client, KTD_REG_LED_ID, 0x00); // turn off all LEDs
+	I2C_WRITE(0x00, 0x05);           // initialization LED off
+	I2C_WRITE(KTD_REG_LED_ID, 0x00); // initialization LED off
+	I2C_WRITE(KTD_REG_LED_ID, 0x00); // turn off all LEDs
 }
 
 void ktd2037_execute_operation(struct ktd2037_priv *obj)
@@ -132,25 +137,25 @@ void ktd2037_execute_operation(struct ktd2037_priv *obj)
 	printk("%s led_id(%x) current(%x,%x,%x) period(%x)\n", __func__, led_id, cr, cg, cb, period);
 #endif
 
-	i2c_smbus_write_byte_data(ktd2037_client, 0x00, 0x05);// initialization LED off
-	i2c_smbus_write_byte_data(ktd2037_client, KTD_REG_LED_ID, 0x00);// initialization LED off
-	i2c_smbus_write_byte_data(ktd2037_client, 0x09, 0x06);// disable auto blink
+	I2C_WRITE(0x00, 0x05);// initialization LED off
+	I2C_WRITE(KTD_REG_LED_ID, 0x00);// initialization LED off
+	I2C_WRITE(0x09, 0x06);// disable auto blink
 
 	if (period) {
 		/* flashing */
-		i2c_smbus_write_byte_data(ktd2037_client, KTD_REG_CURRENT_RED, cr);//set current
-		i2c_smbus_write_byte_data(ktd2037_client, KTD_REG_CURRENT_GREEN, cg);//set current
-		i2c_smbus_write_byte_data(ktd2037_client, KTD_REG_CURRENT_BLUE, cb);//set current
-		i2c_smbus_write_byte_data(ktd2037_client, KTD_REG_DRY_FLASH_PERIOD, period);//dry flash period
-		i2c_smbus_write_byte_data(ktd2037_client, KTD_REG_FLASH_COUNTER, 0x00);//reset internal counter
-		i2c_smbus_write_byte_data(ktd2037_client, KTD_REG_LED_ID, led_id);//turn on led
-		i2c_smbus_write_byte_data(ktd2037_client, KTD_REG_FLASH_COUNTER, 0x32);//led flashing(current ramp-up and down countinuously)
+		I2C_WRITE(KTD_REG_CURRENT_RED, cr);//set current
+		I2C_WRITE(KTD_REG_CURRENT_GREEN, cg);//set current
+		I2C_WRITE(KTD_REG_CURRENT_BLUE, cb);//set current
+		I2C_WRITE(KTD_REG_DRY_FLASH_PERIOD, period);//dry flash period
+		I2C_WRITE(KTD_REG_FLASH_COUNTER, 0x00);//reset internal counter
+		I2C_WRITE(KTD_REG_LED_ID, led_id);//turn on led
+		I2C_WRITE(KTD_REG_FLASH_COUNTER, 0x32);//led flashing(current ramp-up and down countinuously)
 	} else {
 		/* solid color */
-		i2c_smbus_write_byte_data(ktd2037_client, KTD_REG_CURRENT_RED, cr);//set current
-		i2c_smbus_write_byte_data(ktd2037_client, KTD_REG_CURRENT_GREEN, cg);//set current
-		i2c_smbus_write_byte_data(ktd2037_client, KTD_REG_CURRENT_BLUE, cb);//set current
-		i2c_smbus_write_byte_data(ktd2037_client, KTD_REG_LED_ID, led_id);//turn on led
+		I2C_WRITE(KTD_REG_CURRENT_RED, cr);//set current
+		I2C_WRITE(KTD_REG_CURRENT_GREEN, cg);//set current
+		I2C_WRITE(KTD_REG_CURRENT_BLUE, cb);//set current
+		I2C_WRITE(KTD_REG_LED_ID, led_id);//turn on led
 	}
 }
 
