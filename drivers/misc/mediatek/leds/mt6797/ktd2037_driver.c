@@ -74,7 +74,6 @@ void ktd2037_led_off(void)
 	// turn on led when 0x02 is not 0x00,there is set to same as breath leds
 	I2C_WRITE(KTD_REG_CURRENT_RED, 0x00); // set current is 0.125mA
 	I2C_WRITE(KTD_REG_LED_ID, 0x00);      // turn off leds
-	I2C_WRITE(0x00, 0x05);                // enable auto blink
 }
 
 u8 brightness_to_steps(u8 b)
@@ -87,7 +86,6 @@ void ktd2037_turn_off_all_leds(void)
 #ifdef LIGHTS_DBG_ON
 	printk("%s\n", __func__);
 #endif
-	I2C_WRITE(0x00, 0x05);           // initialization LED off
 	I2C_WRITE(KTD_REG_LED_ID, 0x00); // initialization LED off
 	I2C_WRITE(KTD_REG_LED_ID, 0x00); // turn off all LEDs
 }
@@ -137,7 +135,6 @@ void ktd2037_execute_operation(struct ktd2037_priv *obj)
 	printk("%s led_id(%x) current(%x,%x,%x) period(%x)\n", __func__, led_id, cr, cg, cb, period);
 #endif
 
-	I2C_WRITE(0x00, 0x05);// initialization LED off
 	I2C_WRITE(KTD_REG_LED_ID, 0x00);// initialization LED off
 	I2C_WRITE(0x09, 0x06);// disable auto blink
 
