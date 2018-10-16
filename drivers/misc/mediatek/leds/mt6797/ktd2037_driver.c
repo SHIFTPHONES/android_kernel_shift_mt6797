@@ -82,16 +82,6 @@ static int ktd2037_i2c_remove(struct i2c_client *client);
 		printk("%s: I2C_WRITE error reg(0x%x) val(0x%x)\n", __func__, reg, val); \
 	}
 
-void ktd2037_led_off(void)
-{
-#ifdef LIGHTS_DBG_ON
-	printk("%s\n", __func__);
-#endif
-	// turn on led when 0x02 is not 0x00,there is set to same as breath leds
-	I2C_WRITE(KTD_REG_CURRENT_RED, 0x00); // set current is 0.125mA
-	I2C_WRITE(KTD_REG_LED_ID, 0x00);      // turn off leds
-}
-
 u8 brightness_to_steps(u8 b)
 {
 	return (b * MAX_CURRENT) / 255;
