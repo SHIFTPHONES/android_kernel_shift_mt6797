@@ -99,7 +99,7 @@ static unsigned long timer_pos;
 #endif
 
 #if defined(CONFIG_SHIFT5ME_PROJECT) || defined(CONFIG_SHIFT6M_PROJECT)
-extern void ktd2037_led_off(void);//mly
+extern void ktd2037_turn_off_all_leds(void);//mly
 #endif
 /*****************************************************************************
  * PMIC extern function
@@ -300,8 +300,8 @@ void chrdet_int_handler(void)
 		    || boot_mode == LOW_POWER_OFF_CHARGING_BOOT) {
 			PMICLOG("[chrdet_int_handler] Unplug Charger/USB\n");
 		#if defined(CONFIG_SHIFT5ME_PROJECT) || defined(CONFIG_SHIFT6M_PROJECT)
-			 ktd2037_led_off();//mly
-		#endif	 
+			 ktd2037_turn_off_all_leds();
+		#endif
 			mt_power_off();
 		}
 	}
