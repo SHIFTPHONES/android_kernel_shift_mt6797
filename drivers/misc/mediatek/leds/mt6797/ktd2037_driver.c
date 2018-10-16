@@ -11,6 +11,7 @@
 
 #define MAX_CURRENT 0x9
 
+/* Constants taken borrowed from libhardware */
 #define LIGHT_FLASH_NONE            0
 
 /**
@@ -28,26 +29,34 @@
 #define LIGHT_FLASH_HARDWARE        2
 
 /* Registers */
-#define KTD_REG_RESET_CONTROL          0x00
-#define KTD_REG_FLASH_PERIOD           0x01
-#define KTD_REG_FLASH_ON_PERCENT1      0x02 // Timer1: Percentage of flash period the led is lit
-#define KTD_REG_FLASH_ON_PERCENT2      0x03 // Timer2: Percentage of flash period the led is lit
-#define KTD_REG_LED_ID                 0x04
-#define KTD_REG_CURRENT_RED            0x06 // in 0.125mA steps
-#define KTD_REG_CURRENT_BLUE           0x07 // in 0.125mA steps
-#define KTD_REG_CURRENT_GREEN          0x08 // in 0.125mA steps
-#define KTD_REG_AUTO_BLINK             0x09
+#define KTD_REG_RESET_CONTROL		0x00
+#define KTD_REG_FLASH_PERIOD		0x01
+#define KTD_REG_FLASH_ON_PERCENT1	0x02 // Timer1: Percentage of flash period the led is lit
+#define KTD_REG_FLASH_ON_PERCENT2	0x03 // Timer2: Percentage of flash period the led is lit
+#define KTD_REG_LED_ID			0x04
+#define KTD_REG_CURRENT_RED		0x06 // in 0.125mA steps
+#define KTD_REG_CURRENT_BLUE		0x07 // in 0.125mA steps
+#define KTD_REG_CURRENT_GREEN		0x08 // in 0.125mA steps
+#define KTD_REG_AUTO_BLINK		0x09
 
 /* Reg Values */
-#define LED_ENABLE                     0x40
-#define LED_RED_OFFSET                 0
-#define LED_BLUE_OFFSET                        2
-#define LED_GREEN_OFFSET               4
+#define FLASH_PERIOD_RAMP_LINEAR	0x80
 
-#define LED_ON                         0x1
-#define LED_TIMER1                     0x2
-#define LED_TIMER2                     0x3
+#define FLASH_PERIOD_STEP_MS		128 // in 0.128s steps
+#define FLASH_PERIOD_1_MS		384 // from here it goes in FLASH_PERIOD_STEP_MS steps
+#define FLASH_ON_TIMER_FULL             9960 // (99.6% multiplied by 100 in order to avoid floating point) when KTD_REG_FLASH_ON_PERCENT1 or KTD_REG_FLASH_ON_PERCENT2 have value of 255
+#define FLASH_PERIOD_MAX		16380 // maximum period value the KTD chip allows
 
+#define LED_ENABLE			0x40
+#define LED_RED_OFFSET			0
+#define LED_BLUE_OFFSET			2
+#define LED_GREEN_OFFSET		4
+
+#define LED_ON				0x1
+#define LED_TIMER1			0x2
+#define LED_TIMER2			0x3
+
+#define ENABLE_CTRL_LOW_POWER		0x8
 
 struct ktd2037_priv{
 	struct i2c_client *client;
@@ -55,7 +64,8 @@ struct ktd2037_priv{
 	unsigned int led_id;
 	unsigned int curr;
 	int flash_mode;
-	unsigned int flash_period;
+	unsigned int flash_on_ms;
+	unsigned int flash_off_ms;
 	u8  red_brightness;
 	u8  green_brightness;
 	u8  blue_brightness;
@@ -87,13 +97,37 @@ u8 brightness_to_steps(u8 b)
 	return (b * MAX_CURRENT) / 255;
 }
 
+void ktd2037_flash_period_calculate(struct ktd2037_priv *obj, u8 *period, u8 *on_timer)
+{
+	unsigned int flash_period = (obj->flash_on_ms + obj->flash_off_ms); //in ms
+	unsigned int no_steps = 0;
+	unsigned int flash_on_percentage = (obj->flash_on_ms * 100) / flash_period;
+
+	if (flash_period < FLASH_PERIOD_1_MS) {
+		*period = 0;
+	} else {
+		if (flash_period > FLASH_PERIOD_MAX)
+			flash_period = FLASH_PERIOD_MAX;
+
+		no_steps = (flash_period - FLASH_PERIOD_1_MS) / FLASH_PERIOD_STEP_MS;
+		*period = (u8) (no_steps + 1);
+	}
+
+	*on_timer = (u8) ((flash_on_percentage * 255 * 100) / FLASH_ON_TIMER_FULL);
+
+#ifdef LIGHTS_DBG_ON
+	printk("%s: flash_on_ms(%d) flash_off_ms(%d)\n", __func__, obj->flash_on_ms, obj->flash_off_ms);
+	printk("%s: flash_period(%d) no_steps(%d) period(%d)\n", __func__, flash_period, no_steps, *period);
+	printk("%s: flash_on_percentage(%d) on_timer(%d)\n", __func__, flash_on_percentage, *on_timer);
+#endif
+}
+
 void ktd2037_turn_off_all_leds(void)
 {
 #ifdef LIGHTS_DBG_ON
 	printk("%s\n", __func__);
 #endif
-	I2C_WRITE(KTD_REG_LED_ID, 0x00); // initialization LED off
-	I2C_WRITE(KTD_REG_LED_ID, 0x00); // turn off all LEDs
+	I2C_WRITE(KTD_REG_LED_ID, 0x00); // turn off leds
 }
 
 void ktd2037_execute_operation(struct ktd2037_priv *obj)
@@ -102,7 +136,7 @@ void ktd2037_execute_operation(struct ktd2037_priv *obj)
 	u8 cr = brightness_to_steps(obj->red_brightness);
 	u8 cg = brightness_to_steps(obj->green_brightness);
 	u8 cb = brightness_to_steps(obj->blue_brightness);
-	u8 period = 0;
+	u8 period = 0, on_timer = 0;
 
 	if (!obj->red_brightness && !obj->green_brightness && !obj->blue_brightness) {
 		ktd2037_turn_off_all_leds();
@@ -114,7 +148,6 @@ void ktd2037_execute_operation(struct ktd2037_priv *obj)
 
 	switch(obj->flash_mode) {
 	case LIGHT_FLASH_TIMED:
-		/* atm only fixed period, until we guess how to set it up */
 	case LIGHT_FLASH_HARDWARE:
 		if (obj->red_brightness) {
 			led_id |= (LED_TIMER1 << LED_RED_OFFSET);
@@ -125,7 +158,6 @@ void ktd2037_execute_operation(struct ktd2037_priv *obj)
 		if (obj->blue_brightness) {
 			led_id |= (LED_TIMER1 << LED_BLUE_OFFSET);
 		}
-		period = 0x12;
 		break;
 
 	default:
@@ -140,8 +172,20 @@ void ktd2037_execute_operation(struct ktd2037_priv *obj)
 		}
 	}
 
+	/* Set flash period and timer */
+	switch(obj->flash_mode) {
+	case LIGHT_FLASH_TIMED:
+		ktd2037_flash_period_calculate(obj, &period, &on_timer);
+		break;
+
+	case LIGHT_FLASH_HARDWARE:
+		period = 0x12;
+		on_timer = 0x32;
+		break;
+	}
+
 #ifdef LIGHTS_DBG_ON
-	printk("%s led_id(%x) current(%x,%x,%x) period(%x)\n", __func__, led_id, cr, cg, cb, period);
+	printk("%s led_id(%x) current(%x,%x,%x) period(%d) on_timer(%d)\n", __func__, led_id, cr, cg, cb, period, on_timer);
 #endif
 
 	I2C_WRITE(KTD_REG_LED_ID, 0x00);// initialization LED off
@@ -151,13 +195,16 @@ void ktd2037_execute_operation(struct ktd2037_priv *obj)
 	I2C_WRITE(KTD_REG_CURRENT_GREEN, cg);//set current
 	I2C_WRITE(KTD_REG_CURRENT_BLUE, cb);//set current
 
-	if (period) {
-		/* flashing */
+	switch(obj->flash_mode) {
+	case LIGHT_FLASH_TIMED:
+	case LIGHT_FLASH_HARDWARE:
 		I2C_WRITE(KTD_REG_FLASH_PERIOD, period);//dry flash period
 		I2C_WRITE(KTD_REG_FLASH_ON_PERCENT1, 0x00);//reset internal counter
-		I2C_WRITE(KTD_REG_LED_ID, led_id);//turn on led
-		I2C_WRITE(KTD_REG_FLASH_ON_PERCENT1, 0x32);//led flashing(current ramp-up and down countinuously)
-	} else {
+		I2C_WRITE(KTD_REG_LED_ID, led_id); //turn on led
+		I2C_WRITE(KTD_REG_FLASH_ON_PERCENT1, on_timer); //led flashing(current ramp-up and down countinuously)
+		break;
+
+	default:
 		/* solid color */
 		I2C_WRITE(KTD_REG_LED_ID, led_id);//turn on led
 	}
@@ -230,7 +277,7 @@ static ssize_t ktd2037_show_flash_period(struct device *dev, struct device_attri
 	client = to_i2c_client(dev);
 	obj = i2c_get_clientdata(client);
 
-	return sprintf(buf, "%d\n", obj->flash_period);
+	return sprintf(buf, "'%d' ms on, '%d' ms off\n", obj->flash_on_ms, obj->flash_off_ms);
 }
 
 static ssize_t ktd2037_store_flash_period(struct device *dev, struct device_attribute *attr, const char *buf, size_t count)
@@ -238,20 +285,21 @@ static ssize_t ktd2037_store_flash_period(struct device *dev, struct device_attr
 	int ret;
 	struct i2c_client *client;
 	struct ktd2037_priv *obj = NULL;
-	unsigned int value;
+	unsigned int on_ms = 0, off_ms = 0;
 
 	client = to_i2c_client(dev);
 	obj = i2c_get_clientdata(client);
 
-	ret = kstrtouint(buf, 10, &value);
-	if (ret < 0) {
-		dev_err(dev, "%s: value too large!\n", __func__);
-		return ret;
+	ret = sscanf(buf, "%d:%d", &on_ms, &off_ms);
+	if (ret != 2) {
+		dev_err(dev, "%s: unable to parse values!\n", __func__);
+		return -EINVAL;
 	}
-	obj->flash_period = value;
+	obj->flash_on_ms = on_ms;
+	obj->flash_off_ms = off_ms;
 
 #ifdef LIGHTS_DBG_ON
-	printk("%s: value(%d)\n", __func__, value);
+	printk("%s: on_ms(%d) off_ms(%d)\n", __func__, on_ms, off_ms);
 #endif
 
 	return count;
