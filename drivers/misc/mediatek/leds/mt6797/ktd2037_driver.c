@@ -76,6 +76,7 @@ static struct ktd2037_priv *ktd2037_obj = NULL;
 
 static int ktd2037_i2c_probe(struct i2c_client *client, const struct i2c_device_id *id);
 static int ktd2037_i2c_remove(struct i2c_client *client);
+static void ktd2037_i2c_shutdown(struct i2c_client *);
 
 #define I2C_WRITE(reg, val) \
 	if (i2c_smbus_write_byte_data(ktd2037_client, reg, val) != 0) { \
@@ -218,6 +219,7 @@ static struct i2c_driver ktd2037_driver = {
 	},
 	.probe = ktd2037_i2c_probe,
 	.remove = ktd2037_i2c_remove,
+	.shutdown = ktd2037_i2c_shutdown,
 	.id_table = ktd2037_id,
 };
 
@@ -407,6 +409,11 @@ static int ktd2037_i2c_remove(struct i2c_client *client)
 	i2c_unregister_device(client);
 	kfree(i2c_get_clientdata(client));
 	return 0;
+}
+
+static void ktd2037_i2c_shutdown(struct i2c_client *client)
+{
+	ktd2037_turn_off_all_leds();
 }
 
 static int __init ktd2037_init(void)
