@@ -169,7 +169,11 @@ static imgsensor_info_struct imgsensor_info = {
 	.sensor_interface_type = SENSOR_INTERFACE_TYPE_MIPI,//sensor_interface_type
     .mipi_sensor_type = MIPI_OPHY_NCSI2, //0,MIPI_OPHY_NCSI2;  1,MIPI_OPHY_CSI2
     .mipi_settle_delay_mode = MIPI_SETTLEDELAY_MANUAL,//0,MIPI_SETTLEDELAY_AUTO; 1,MIPI_SETTLEDELAY_MANNUAL
+#ifdef CONFIG_SHIFT6M_PROJECT
 	.sensor_output_dataformat = SENSOR_OUTPUT_FORMAT_RAW_B, //SENSOR_OUTPUT_FORMAT_RAW_Gr,//SENSOR_OUTPUT_FORMAT_RAW_R,//sensor output first pixel color
+#else
+	.sensor_output_dataformat = SENSOR_OUTPUT_FORMAT_RAW_R, //SENSOR_OUTPUT_FORMAT_RAW_Gr,//SENSOR_OUTPUT_FORMAT_RAW_B,//sensor output first pixel color
+#endif
 	.mclk = 24,//mclk value, suggest 24 or 26 for 24Mhz or 26Mhz
 	.mipi_lane_num = SENSOR_MIPI_4_LANE,//mipi lane num
 	.i2c_addr_table = {0x34, 0x20, 0xff},//record sensor support all write id addr, only supprt 4must end with 0xff
@@ -177,7 +181,11 @@ static imgsensor_info_struct imgsensor_info = {
 
 
 static imgsensor_struct imgsensor = {
+#ifdef CONFIG_SHIFT6M_PROJECT
 	.mirror = IMAGE_HV_MIRROR,				//mirrorflip information
+#else
+	.mirror = IMAGE_NORMAL,				//mirrorflip information
+#endif
 	.sensor_mode = IMGSENSOR_MODE_INIT, //IMGSENSOR_MODE enum value,record current sensor mode,such as: INIT, Preview, Capture, Video,High Speed Video, Slim Video
 	.shutter = 0x14d,					//current shutter
 	.gain = 0xe000,						//current gain
@@ -239,7 +247,11 @@ static SET_PD_BLOCK_INFO_T imgsensor_pd_info =
     .i4SubBlkH =16,
     .i4PosL = {{26,29},{42,29},{33,48},{49,48}},
     .i4PosR = {{25,32},{41,32},{34,45},{50,45}},
+#ifdef CONFIG_SHIFT6M_PROJECT
     .iMirrorFlip = 3, /* 0:IMAGE_NORMAL,1:IMAGE_H_MIRROR,2:IMAGE_V_MIRROR,3:IMAGE_HV_MIRROR*/
+#else
+    .iMirrorFlip = 0, /* 0:IMAGE_NORMAL,1:IMAGE_H_MIRROR,2:IMAGE_V_MIRROR,3:IMAGE_HV_MIRROR*/
+#endif
 };
 
 /* Binning Type VC information*/
@@ -1320,7 +1332,11 @@ static void sensor_init(void)
 
 	imx258_ImageQuality_Setting();
 	/*Need Mirror/Flip*/
+#ifdef CONFIG_SHIFT6M_PROJECT
 	set_mirror_flip(3);
+#else
+	set_mirror_flip(0);
+#endif
 
 	load_imx258_SPC_Data();
 	write_cmos_sensor(0x7BC8,0x01);

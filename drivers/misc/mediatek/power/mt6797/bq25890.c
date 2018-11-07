@@ -673,7 +673,7 @@ void bq25890_pumpx_up(unsigned int val)
 	}
 
 	/* Input current limit = 500 mA, changes after PE+ detection */
-#ifdef CONFIG_SHIFT6M_PROJECT  //zfr1024 here
+#if defined(CONFIG_SHIFT5ME_PROJECT) || defined(CONFIG_SHIFT6M_PROJECT)
 	bq25890_set_iinlim(0x14);//0x14 800ma. old is(0x08);500ma
 #else
 	bq25890_set_iinlim(0x08);//500ma
@@ -1146,7 +1146,7 @@ static struct platform_driver bq25890_user_space_driver = {
 		   },
 };
 
-#if defined(CONFIG_SHIFT6M_PROJECT)
+#if defined(CONFIG_SHIFT5ME_PROJECT) || defined(CONFIG_SHIFT6M_PROJECT)
 //ljj for Android M 6.0 PinCtrl zfr0920
 /*=======================================================================
   * platform driver
@@ -1269,7 +1269,7 @@ static int __init bq25890_init(void)
 			    ret);
 		return ret;
 	}
-#if defined(CONFIG_SHIFT6M_PROJECT)
+#if defined(CONFIG_SHIFT5ME_PROJECT) || defined(CONFIG_SHIFT6M_PROJECT)
     //ljj for Android M 6.0 PinCtrl zfr0920
     if (platform_driver_register(&SWcharger_Driver)) {
         printk("[ljj]failed to register SWcharger driver\n");

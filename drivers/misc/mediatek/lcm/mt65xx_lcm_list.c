@@ -34,6 +34,9 @@ LCM_DSI_MODE_CON lcm_dsi_mode;
 #endif
 
 LCM_DRIVER *lcm_driver_list[] = {
+#if defined(FT8716_FHD_DSI_CMD_SHIFT5ME)
+	&ft8716_fhd_dsi_cmd_shift5me_lcm_drv,
+#endif
 #if defined(RM67195_FHD_DSI_CMD_SHIFT6M)
 	&rm67195_fhd_dsi_cmd_shift6m_lcm_drv,
 #endif
@@ -1044,6 +1047,9 @@ LCM_DRIVER *lcm_driver_list[] = {
 };
 
 unsigned char lcm_name_list[][128] = {
+#if defined(FT8716_FHD_DSI_CMD_SHIFT5ME)
+	"ft8716_fhd_dsi_cmd_shift5me",
+#endif
 #if defined(HX8392A_DSI_CMD)
 	"hx8392a_dsi_cmd",
 #endif

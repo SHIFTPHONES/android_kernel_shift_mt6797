@@ -5112,7 +5112,7 @@ static int als_get_data(int* value, int* status)
 	}
 	else
 	{
-#ifdef CONFIG_SHIFT6M_PROJECT
+#if defined(CONFIG_SHIFT5ME_PROJECT) || defined(CONFIG_SHIFT6M_PROJECT)
 //hanzening add for aal               
         *value = obj->als;
 //end
@@ -5293,7 +5293,7 @@ static int stk3x1x_i2c_probe(struct i2c_client *client, const struct i2c_device_
 	obj->wait_val = 0xF;
 	obj->int_val = 0;
 	obj->first_boot = true;			 
-#ifdef CONFIG_SHIFT6M_PROJECT	 
+#if defined(CONFIG_SHIFT5ME_PROJECT) || defined(CONFIG_SHIFT6M_PROJECT) 
 	obj->als_correct_factor = 275;
 #else
     obj->als_correct_factor = 1000;
