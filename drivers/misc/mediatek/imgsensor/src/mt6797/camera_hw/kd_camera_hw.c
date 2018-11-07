@@ -223,8 +223,21 @@ PowerUp PowerOnList = {
 	   },
 	  },
 #endif
-  
-	 
+#if defined(S5K3P9SX_MIPI_RAW)
+      {SENSOR_DRVNAME_S5K3P9SX_MIPI_RAW,
+      {
+       {SensorMCLK, Vol_High, 0},
+       {DOVDD, Vol_1800, 0},
+       {AVDD, Vol_2800, 0},
+       {DVDD, Vol_1000, 0},
+       {AFVDD, Vol_2800, 5},
+       {PDN, Vol_Low, 4},
+       {PDN, Vol_High, 0},
+       {RST, Vol_Low, 1},
+       {RST, Vol_High, 0},
+       },
+      },  
+#endif	 
 #if defined(S5K5E2YA_MIPI_RAW)
 	 {SENSOR_DRVNAME_S5K5E2YA_MIPI_RAW,
 	  {

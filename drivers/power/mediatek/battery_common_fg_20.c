@@ -1724,7 +1724,7 @@ static void battery_update(struct battery_data *bat_data)
 	struct power_supply *bat_psy = &bat_data->psy;
 	static unsigned int shutdown_cnt = 0xBADDCAFE;
 	static unsigned int shutdown_cnt_chr = 0xBADDCAFE;
-#ifdef CONFIG_SHIFT6M_PROJECT//
+#if defined(CONFIG_SHIFT5ME_PROJECT) || defined(CONFIG_SHIFT6M_PROJECT)
 	static unsigned int update_cnt = 0;
 #else
 	static unsigned int update_cnt = 6;
@@ -2167,7 +2167,7 @@ void mt_battery_GetBatteryData(void)
 		charger_vol = battery_meter_get_charger_voltage();
 	} else {
 		ICharging = 0;
-	#ifdef CONFIG_SHIFT6M_PROJECT	//lcy mod 0328
+	#if defined(CONFIG_SHIFT5ME_PROJECT) || defined(CONFIG_SHIFT6M_PROJECT)
 		charger_vol = battery_meter_get_charger_voltage();
 	#else
 		charger_vol = 0;
@@ -2616,7 +2616,7 @@ void mt_battery_update_status(void)
 }
 
 //zfradd0118s
-#ifdef CONFIG_SHIFT6M_PROJECT
+#if defined(CONFIG_SHIFT5ME_PROJECT) || defined(CONFIG_SHIFT6M_PROJECT)
 //ljj add for detecting the non-std as the low inserting speed
 static int g_non_std_chr_det = 0;
 #endif
@@ -2663,7 +2663,7 @@ CHARGER_TYPE mt_charger_type_detection(void)
 #endif
 	}
 	//zfradd0118s
-#ifdef CONFIG_SHIFT6M_PROJECT
+#if defined(CONFIG_SHIFT5ME_PROJECT) || defined(CONFIG_SHIFT6M_PROJECT)
 		//ljj add for detecting the non-std as the low inserting speed
 	if (BMT_status.charger_type == NONSTANDARD_CHARGER)
 	{
@@ -2762,7 +2762,7 @@ static void mt_battery_charger_detect_check(void)
 			}
 		}
 		//zfradd0118s
-#ifdef CONFIG_SHIFT6M_PROJECT
+#if defined(CONFIG_SHIFT5ME_PROJECT) || defined(CONFIG_SHIFT6M_PROJECT)
 		//ljj add for detecting the non-std as the low inserting speed 
 		if ((BMT_status.charger_type == NONSTANDARD_CHARGER)&&(g_non_std_chr_det < 6))//ingcluing about 30s slow inserting
 		{
@@ -2808,7 +2808,7 @@ static void mt_battery_charger_detect_check(void)
 #endif /* CONFIG_TCPC_CLASS */
 
 //zfradd0118s
-#ifdef CONFIG_SHIFT6M_PROJECT
+#if defined(CONFIG_SHIFT5ME_PROJECT) || defined(CONFIG_SHIFT6M_PROJECT)
 		//ljj add for detecting the non-std as the low inserting speed 
 		g_non_std_chr_det = 0;
 #endif
@@ -3800,7 +3800,7 @@ static int __batt_init_cust_data_from_dt(void)
 
 	/* check customer setting */
 	//np = of_find_compatible_node(NULL, NULL, "mediatek,battery");//ori
-#ifdef CONFIG_SHIFT6M_PROJECT  //zfr1024 here
+#if defined(CONFIG_SHIFT5ME_PROJECT) || defined(CONFIG_SHIFT6M_PROJECT)
 	np = of_find_compatible_node(NULL, NULL, "mediatek,bat_meter");//zfr1011 modify
 #else
 	np = of_find_compatible_node(NULL, NULL, "mediatek,battery");//ori

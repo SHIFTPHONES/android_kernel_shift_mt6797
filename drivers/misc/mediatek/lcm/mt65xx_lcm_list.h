@@ -270,6 +270,7 @@ extern LCM_DRIVER nt35695B_fhd_dsi_vdo_auo_nt50358_lcm_drv;
 extern LCM_DRIVER auo_wuxga_dsi_vdo_lcm_drv;
 extern LCM_DRIVER ili9806e_dsi_vdo_tcl_blu5039_drv;
 extern LCM_DRIVER rm67195_fhd_dsi_cmd_shift6m_lcm_drv;
+extern LCM_DRIVER ft8716_fhd_dsi_cmd_shift5me_lcm_drv;
 extern LCM_DRIVER otm8019a_dsi_vdo_boyi_t50m_drv;
 #ifdef BUILD_LK
 extern void mdelay(unsigned long msec);

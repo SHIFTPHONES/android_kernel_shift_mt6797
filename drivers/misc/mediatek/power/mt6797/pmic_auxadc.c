@@ -212,7 +212,7 @@ signed int PMIC_IMM_GetCurrent(void)
 	ADC_I_SENSE = (isense * 3 * VOLTAGE_FULL_RANGE) / 32768;
 
 #if defined(CONFIG_MTK_SMART_BATTERY)
-#if defined(CONFIG_SHIFT6M_PROJECT)
+#if defined(CONFIG_SHIFT5ME_PROJECT) || defined(CONFIG_SHIFT6M_PROJECT)
 
 	ICharging =
 	    (ADC_BAT_SENSE - ADC_I_SENSE +

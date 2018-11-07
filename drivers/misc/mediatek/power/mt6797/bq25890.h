@@ -390,7 +390,7 @@ unsigned int bq25890_get_vdpm_state(void);
 
 /*Added for debuging to check power off caller*/
 extern void dump_stack(void);
-#if defined(CONFIG_SHIFT6M_PROJECT)
+#if defined(CONFIG_SHIFT5ME_PROJECT) || defined(CONFIG_SHIFT6M_PROJECT)
 //ljj add //zfr0920
 extern int swch_en_gpio_set(int en);
 //end ljj //zfr0920

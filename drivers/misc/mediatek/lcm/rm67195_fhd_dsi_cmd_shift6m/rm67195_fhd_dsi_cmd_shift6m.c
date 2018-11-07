@@ -257,22 +257,10 @@ lcm_gpio_reset(1);
 MDELAY(20);
 	
 push_table(lcm_initialization_setting, sizeof(lcm_initialization_setting) / sizeof(struct LCM_setting_table),1);
-
-#ifdef BUILD_LK
-	dprintf(0, "[LK]lcyshift--push_table end\n");
-#else
-        printk("[Kernel]lcyshift--lcm_init:push_table end\n");
-#endif
-     
 }
 
 static void lcm_suspend(void)
 {
-#ifdef BUILD_LK
-	dprintf(0, "[LK]lcyshift--lcm_suspend\n");
-#else
-        printk("[Kernel]lcyshift--lcm_suspend\n");
-#endif
 push_table(lcm_suspend_setting, sizeof(lcm_suspend_setting) / sizeof(struct LCM_setting_table), 1);
 	
 lcm_gpio_reset(0);
@@ -282,11 +270,6 @@ lcm_gpio_power_off();
 
 static void lcm_resume(void)
 {
-#ifdef BUILD_LK
-	dprintf(0, "[LK]lcyshift--lcm_resume\n");
-#else
-        printk("[Kernel]lcyshift--lcm_resume\n");
-#endif
 	lcm_init();
 }
 
@@ -324,7 +307,6 @@ static void lcm_setbacklight_cmdq(void *handle, unsigned int level)
 	unsigned int cmd = 0x51;
 	unsigned char count = 1;
 	unsigned char value = level;
-    printk("[Kernel]lcyshift--lcm_setbacklight_cmdq level=[%d] \n",value);
 	dsi_set_cmdq_V22(handle, cmd, count, &value, 1);
 }
 

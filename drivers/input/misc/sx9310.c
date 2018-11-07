@@ -650,8 +650,8 @@ static int initialize(psx93XX_t this)
 		
 		
 		sx9310_reg_init(this);
-#ifdef CONFIG_SHIFT6M_PROJECT//hanzening added
-		write_register(this, sx9310_CPS_CTRL0_REG, 0x51);//shift6m only use cs0 ; hzn
+#if defined(CONFIG_SHIFT5ME_PROJECT) || defined(CONFIG_SHIFT6M_PROJECT)
+		write_register(this, sx9310_CPS_CTRL0_REG, 0x51);//shift5me and shift6m only use cs0 ; hzn
 		write_register(this, sx9310_CPS_CTRL8_REG, 0x98);//range = 10mm			; hzn
 		write_register(this, sx9310_IRQ_ENABLE_REG, 0x70);//compensation interrupt	//; pxs_add 20180312
 		

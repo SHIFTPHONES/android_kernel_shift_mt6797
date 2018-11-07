@@ -654,7 +654,6 @@ static int tpd_irq_registration(void)
 		printk("tpd request_irq can not find touch eint device node!.");
 		return -1;
 	}
-	printk("[%s]irq:%d,lcy debounce:%d-%d:", __func__, touch_irq_dsx, ints[0], ints[1]);
 	return ret;
 }
 
@@ -1228,7 +1227,6 @@ static int synaptics_rmi4_f11_abs_report(struct synaptics_rmi4_data *rmi4_data,
 			//x =1080-x;
 			y = (data.y_position_11_4 << 4) | data.y_position_3_0;
 			//y =1920-y;//lcy
-			pr_err(" %s:lcy x = %d, y = %d.\n",__func__,x,y);		
 			
 			wx = data.wx;
 			wy = data.wy;
@@ -1422,7 +1420,6 @@ static int synaptics_rmi4_f12_abs_report(struct synaptics_rmi4_data *rmi4_data,
 			//x =1080-x;
 			y = (finger_data->y_msb << 8) | (finger_data->y_lsb);
 			//y =1920-y;//lcy
-			pr_err(" %s:lcy x = %d, y = %d.\n",__func__,x,y);
 #ifdef REPORT_2D_W
 			wx = finger_data->wx;
 			wy = finger_data->wy;
@@ -3596,7 +3593,6 @@ static int synaptics_rmi4_probe(struct i2c_client *client,
 
 #ifdef CONFIG_OF_TOUCH
 	tpd_gpio_as_int(1);
-	pr_err(" %s:lcy tpd_gpio_as_int 1\n",__func__);
 #else
 	TPD_GPIO_AS_INT(1);
 #endif
@@ -3604,7 +3600,6 @@ static int synaptics_rmi4_probe(struct i2c_client *client,
 #ifdef CONFIG_OF_TOUCH
 	/* EINT device tree, default EINT enable */
 	tpd_irq_registration();
-	pr_err(" %s:lcy tpd_irq_registration 1\n",__func__);
 #else
 	mt_eint_registration(CUST_EINT_TOUCH_PANEL_NUM, EINTF_TRIGGER_FALLING, tpd_eint_handler, 1);
 #endif
@@ -3615,10 +3610,6 @@ static int synaptics_rmi4_probe(struct i2c_client *client,
 				"%s: Failed to register attention interrupt\n",
 				__func__);
 		goto err_enable_irq;
-	}else{
-		dev_err(&client->dev,
-				"%s: lcy add Succ to register attention interrupt\n",
-				__func__);
 	}
 
 	if (!exp_data.initialized) {
@@ -3635,10 +3626,7 @@ static int synaptics_rmi4_probe(struct i2c_client *client,
 				"%s: Failed to create_singlethread_workqueue\n",
 				__func__);
 		goto err_enable_irq;
-	}else{
-		dev_err(&client->dev,
-				"%s:lcy add Succ to create_singlethread_workqueue\n",
-__func__);}
+	}
 	
 	INIT_DELAYED_WORK(&exp_data.work, synaptics_rmi4_exp_fn_work);
 	exp_data.rmi4_data = rmi4_data;
@@ -3681,7 +3669,6 @@ __func__);}
 	g_rmi4_ptr = rmi4_data;
 	g_dev = &tpd->dev->dev /*&rmi4_data->input_dev->dev*/;
 
-	printk("lcy add probe 000000000!");
 	return retval;
 
 err_sysfs:

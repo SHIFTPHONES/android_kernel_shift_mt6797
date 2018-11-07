@@ -434,7 +434,7 @@ int mtk_pep_start_algorithm(void)
 {
 	int ret = 0, chr_volt;
 	//zfr1101adds---
-#ifdef CONFIG_SHIFT6M_PROJECT  //zfr1024 here
+#if defined(CONFIG_SHIFT5ME_PROJECT) || defined(CONFIG_SHIFT6M_PROJECT)
 	#if defined(TA_12V_SUPPORT)||defined(TA_9V_SUPPORT)
 		unsigned int chr_ovp_en;
 	#endif
@@ -496,7 +496,7 @@ int mtk_pep_start_algorithm(void)
 			battery_log(BAT_LOG_CRTI,
 				"%s: failed, cannot increase to 9V\n",
 				__func__);
-#ifdef CONFIG_SHIFT6M_PROJECT  //zfr1024 
+#if defined(CONFIG_SHIFT5ME_PROJECT) || defined(CONFIG_SHIFT6M_PROJECT)
 			//zfr1101del goto _err;
 #else
 			goto _err;
@@ -514,7 +514,7 @@ int mtk_pep_start_algorithm(void)
 			battery_log(BAT_LOG_CRTI,
 				"%s: failed, cannot increase to 12V\n",
 				__func__);
-#ifdef CONFIG_SHIFT6M_PROJECT  //zfr1024 
+#if defined(CONFIG_SHIFT5ME_PROJECT) || defined(CONFIG_SHIFT6M_PROJECT)
 			//zfr1101del goto _err;
 			//zfr1101adds-------------------------------------
 			/*1. Enable PMIC VBUS OVP : VCDT */

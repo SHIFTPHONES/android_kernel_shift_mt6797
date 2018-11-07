@@ -303,7 +303,7 @@ static int charging_hw_init(void *data)
 /*K.S. way here*/
 #endif
 #endif
-#if defined(CONFIG_SHIFT6M_PROJECT)//zfr0920
+#if defined(CONFIG_SHIFT5ME_PROJECT) || defined(CONFIG_SHIFT6M_PROJECT)
 	swch_en_gpio_set(1);
 #else
 	mt_set_gpio_dir((254 | 0x80000000), 1);
@@ -334,7 +334,7 @@ static int charging_enable(void *data)
 	unsigned int enable = *(unsigned int *) (data);
 
 	if (KAL_TRUE == enable) {
-#if defined(CONFIG_SHIFT6M_PROJECT)
+#if defined(CONFIG_SHIFT5ME_PROJECT) || defined(CONFIG_SHIFT6M_PROJECT)
 		//ljj add //zfr0920
 		swch_en_gpio_set(1);
 #endif
@@ -342,7 +342,7 @@ static int charging_enable(void *data)
 		bq25890_set_en_hiz(0x0);
 		bq25890_chg_en(enable);
 	} else {
-#if defined(CONFIG_SHIFT6M_PROJECT)
+#if defined(CONFIG_SHIFT5ME_PROJECT) || defined(CONFIG_SHIFT6M_PROJECT)
 		//ljj add //zfr0920
 		swch_en_gpio_set(0);
 #endif
@@ -1035,7 +1035,7 @@ static int charging_sw_init(void *data)
 
 	/*CV mode */
 	//ori bq25890_config_interface(bq25890_CON6, 0x20, 0x3F, 2);	/* VREG=CV 4.352V (default 4.208V) */
-#ifdef CONFIG_SHIFT6M_PROJECT
+#if defined(CONFIG_SHIFT5ME_PROJECT) || defined(CONFIG_SHIFT6M_PROJECT)
 //		bq25890_config_interface(bq25890_CON6, 0x24, 0x3F, 2);	/* VREG=CV 4.416V (default 4.208V) */
 		bq25890_config_interface(bq25890_CON6, 0x23, 0x3F, 2);	/* VREG=CV 4.400V (default 4.208V) */
 #else

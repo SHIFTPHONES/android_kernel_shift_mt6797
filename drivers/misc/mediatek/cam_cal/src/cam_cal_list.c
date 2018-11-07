@@ -36,11 +36,23 @@
 #endif
 
 
-#define MTK_MAX_CID_NUM 3  //modify 3->4
+#ifdef CONFIG_SHIFT6M_PROJECT
+#define MTK_MAX_CID_NUM 3
+#else
+#define MTK_MAX_CID_NUM 4
+#endif
+
 unsigned int mtkCidList[MTK_MAX_CID_NUM] = {
+#ifdef CONFIG_SHIFT6M_PROJECT
 	0x00000002, //add for koda main camera
+#elif defined(CONFIG_SHIFT5ME_PROJECT)
+	0x00000025, //add for koda main camera
+#endif
 	0x000000dd, //add for koda sub camera
 	0x00000023, //pxs-add 20161116 for zkyd
+#ifdef CONFIG_SHIFT5ME_PROJECT
+        0x00000024,
+#endif
 //	0x010b00ff,/*Single MTK Format*/
 //	0x020b00ff,/*Double MTK Format in One OTP/EEPRom - Legacy*/
 //	0x030b00ff /*Double MTK Format in One OTP/EEPRom*/
@@ -58,11 +70,16 @@ stCAM_CAL_FUNC_STRUCT g_camCalCMDFunc[] = {
 
 stCAM_CAL_LIST_STRUCT g_camCalList[] = {
 //pxs_add
-#if 1
-//#if defined(CONFIG_SHIFT6M_PROJECT )//pxs_add 20171024
+#ifdef CONFIG_SHIFT6M_PROJECT
  	{IMX230_SENSOR_ID, 0xA0, CMD_AUTO, cam_cal_check_mtk_cid}, //add 
 	{S5K3L8_SENSOR_ID, 0xB0, CMD_BRCB032GWZ, cam_cal_check_mtk_cid},
-	{S5K3L8_SENSOR_ID_ZK, 0xA0, CMD_AUTO, cam_cal_check_mtk_cid},	
+	{S5K3L8_SENSOR_ID_ZK, 0xA0, CMD_AUTO, cam_cal_check_mtk_cid},
+#else
+#ifdef CONFIG_SHIFT5ME_PROJECT
+	{S5K3P9SX_SENSOR_ID, 0xA0, CMD_AUTO, cam_cal_check_mtk_cid}, //add 
+        {IMX258_SENSOR_ID, 0xA0, CMD_AUTO, cam_cal_check_mtk_cid},
+	{S5K3L8_SENSOR_ID, 0xB0, CMD_BRCB032GWZ, cam_cal_check_mtk_cid},
+	{S5K3L8_SENSOR_ID_ZK, 0xA0, CMD_AUTO, cam_cal_check_mtk_cid},
 #else
 	{OV23850_SENSOR_ID, 0xA0, CMD_AUTO, cam_cal_check_mtk_cid},
 	{OV23850_SENSOR_ID, 0xA8, CMD_AUTO, cam_cal_check_mtk_cid},
@@ -85,6 +102,7 @@ stCAM_CAL_LIST_STRUCT g_camCalList[] = {
 
 	{S5K2P8_SENSOR_ID, 0xA2, CMD_AUTO, cam_cal_check_mtk_cid},/*J main */
 	{OV8858_SENSOR_ID, 0xA2, CMD_AUTO, cam_cal_check_mtk_cid},/*J sub */
+#endif
 #endif
 	/*  ADD before this line */
 	{0, 0, CMD_NONE, 0} /*end of list*/

@@ -14,8 +14,10 @@
 #ifndef _CUST_BATTERY_METER_TABLE_H
 #define _CUST_BATTERY_METER_TABLE_H
 
-#ifdef CONFIG_SHIFT6M_PROJECT
+#if defined(CONFIG_SHIFT6M_PROJECT)
 #include "mt_battery_meter_table_shift6m.h"
+#elif defined(CONFIG_SHIFT5ME_PROJECT)
+#include "mt_battery_meter_table_shift5m.h"
 #else
 /* ============================================================
 // define
@@ -997,6 +999,6 @@ BATTERY_PROFILE_STRUCT_P fgauge_get_profile(unsigned int temperature);
 int fgauge_get_saddles_r_table(void);
 R_PROFILE_STRUCT_P fgauge_get_profile_r_table(unsigned int temperature);
 
-#endif //#ifdef CONFIG_SHIFT6M_PROJECT
+#endif //#if defined(CONFIG_SHIFT5ME_PROJECT) || defined(CONFIG_SHIFT6M_PROJECT)
 #endif //#ifndef _CUST_BATTERY_METER_TABLE_H
 

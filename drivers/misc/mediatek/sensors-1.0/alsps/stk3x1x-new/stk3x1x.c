@@ -5112,7 +5112,7 @@ static int als_get_data(int* value, int* status)
 	}
 	else
 	{
-#ifdef CONFIG_SHIFT6M_PROJECT
+#if defined(CONFIG_SHIFT5ME_PROJECT) || defined(CONFIG_SHIFT6M_PROJECT)
 //hanzening add for aal               
         *value = obj->als;
 //end
@@ -5244,6 +5244,9 @@ static int stk3x1x_i2c_probe(struct i2c_client *client, const struct i2c_device_
 	//struct device_node *node = NULL;
 	//struct hwmsen_object obj_ps, obj_als;
 	int err = 0;
+#if defined(CONFIG_SHIFT5ME_PROJECT)
+	u8 PID_value;
+#endif
 	struct als_control_path als_ctl={0};
 	struct als_data_path als_data={0};
 	struct ps_control_path ps_ctl={0};
@@ -5293,11 +5296,7 @@ static int stk3x1x_i2c_probe(struct i2c_client *client, const struct i2c_device_
 	obj->wait_val = 0xF;
 	obj->int_val = 0;
 	obj->first_boot = true;			 
-#ifdef CONFIG_SHIFT6M_PROJECT	 
-	obj->als_correct_factor = 275;
-#else
-    obj->als_correct_factor = 1000;
-#endif
+
 	atomic_set(&obj->ps_high_thd_val, obj->hw->ps_threshold_high);//  obj->hw->ps_high_thd_val
 	atomic_set(&obj->ps_low_thd_val, obj->hw->ps_threshold_low);	
     APS_ERR("als/ps pxs_psensor_debug_xx high:%d , %s  \n", obj->hw->ps_threshold_high , __func__ );	
@@ -5356,6 +5355,24 @@ static int stk3x1x_i2c_probe(struct i2c_client *client, const struct i2c_device_
 #ifdef STK_TUNE0
 	obj->ps_tune0_delay = ns_to_ktime(60 * NSEC_PER_MSEC);
 	obj->ps_tune0_timer.function = stk_ps_tune0_timer_func;
+#endif
+#if defined(CONFIG_SHIFT6M_PROJECT)
+	obj->als_correct_factor = 275;		 
+#elif defined(CONFIG_SHIFT5ME_PROJECT)
+    err = stk3x1x_master_recv(client, STK_PDT_ID_REG, &PID_value, 0x01);
+	if(err < 0)
+	{
+	    APS_DBG("error: %d\n", err);
+	    return -EFAULT;
+	}
+        if (PID_value == 0x12) {	 
+	    obj->als_correct_factor = 125;
+        }
+        else {
+            obj->als_correct_factor = 220;
+        }
+#else
+     obj->als_correct_factor = 1000;
 #endif		
 	if((err = stk3x1x_init_client(client)))
 	{

@@ -90,7 +90,7 @@
 #endif
 
 //lcy add
-#ifdef CONFIG_SHIFT6M_PROJECT
+#if defined(CONFIG_SHIFT5ME_PROJECT) || defined(CONFIG_SHIFT6M_PROJECT)
 extern void speaker_pa_enable(bool on);
 #endif
 /* static function declaration */
@@ -2352,7 +2352,7 @@ static void Ext_Speaker_Amp_Change(bool enable)
 #ifndef CONFIG_MTK_SPEAKER
 
 //lcy add spaeker pa on
-#ifdef CONFIG_SHIFT6M_PROJECT
+#if defined(CONFIG_SHIFT5ME_PROJECT) || defined(CONFIG_SHIFT6M_PROJECT)
       speaker_pa_enable(1);
       udelay(10);
       speaker_pa_enable(0);
@@ -2400,7 +2400,7 @@ static void Ext_Speaker_Amp_Change(bool enable)
 		pr_debug("Ext_Speaker_Amp_Change OFF+\n");
 #ifndef CONFIG_MTK_SPEAKER
 //lcy add spaeker pa off
-#ifdef CONFIG_SHIFT6M_PROJECT
+#if defined(CONFIG_SHIFT5ME_PROJECT) || defined(CONFIG_SHIFT6M_PROJECT)
       speaker_pa_enable(0);
 #endif
 
