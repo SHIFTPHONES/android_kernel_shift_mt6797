@@ -44,7 +44,7 @@
 #include <linux/kthread.h>
 #include <linux/device.h>
 #include <linux/fs.h>
-
+#include <linux/proc_fs.h>
 
 #ifdef KERNEL_ABOVE_3_18_0
 #include "mt_gpio.h"
@@ -93,7 +93,8 @@
 #define SENSOR_MAX_X 1080
 #define SENSOR_MAX_Y 1920
 
-#define WAKEUP_GESTURE true
+#define SUPPORT_GESTURES
+#define ENABLE_GESTURES_BY_DEFAULT 0
 
 #define NO_0D_WHILE_2D
 /*
@@ -245,11 +246,6 @@ static ssize_t synaptics_rmi4_0dbutton_store(struct device *dev,
 static ssize_t synaptics_rmi4_suspend_store(struct device *dev,
 		struct device_attribute *attr, const char *buf, size_t count);
 
-static ssize_t synaptics_rmi4_wake_gesture_show(struct device *dev,
-		struct device_attribute *attr, char *buf);
-
-static ssize_t synaptics_rmi4_wake_gesture_store(struct device *dev,
-		struct device_attribute *attr, const char *buf, size_t count);
 struct synaptics_rmi4_f01_device_status {
 	union {
 		struct {
@@ -624,9 +620,6 @@ static struct device_attribute attrs[] = {
 	__ATTR(suspend, 0660,
 			synaptics_rmi4_show_error,
 			synaptics_rmi4_suspend_store),
-	__ATTR(wake_gesture, 0660,
-			synaptics_rmi4_wake_gesture_show,
-			synaptics_rmi4_wake_gesture_store),
 };
 
 #ifdef CONFIG_OF_TOUCH
@@ -812,34 +805,58 @@ static ssize_t synaptics_rmi4_suspend_store(struct device *dev,
 	return count;
 }
 
-
-static ssize_t synaptics_rmi4_wake_gesture_show(struct device *dev,
-		struct device_attribute *attr, char *buf)
+static ssize_t productinfo_read_func(struct file *file,
+		char __user *user_buf, size_t count, loff_t *ppos)
 {
-	//struct synaptics_rmi4_data *rmi4_data = dev_get_drvdata(dev);
+	int ret = 0;
+	char buf[10];
 	struct synaptics_rmi4_data *rmi4_data = g_rmi4_ptr;
 
-	return snprintf(buf, PAGE_SIZE, "%u\n",
-			rmi4_data->enable_wakeup_gesture);
+	ret = snprintf(buf, 10, "0x%02x 0x%02x\n",
+			(rmi4_data->rmi4_mod_info.product_info[0]),
+			(rmi4_data->rmi4_mod_info.product_info[1]));
+	ret = simple_read_from_buffer(user_buf, count, ppos, buf, strlen(buf));
+	return ret;
 }
+static const struct file_operations productinfo_proc_fops = {
+	.read =  productinfo_read_func,
+	.open = simple_open,
+	.owner = THIS_MODULE,
+};
 
-static ssize_t synaptics_rmi4_wake_gesture_store(struct device *dev,
-		struct device_attribute *attr, const char *buf, size_t count)
+#ifdef SUPPORT_GESTURES
+static ssize_t double_tap_enable_read_func(struct file *file, char __user *user_buf, size_t count, loff_t *ppos)
 {
-	unsigned int input;
-	//struct synaptics_rmi4_data *rmi4_data = dev_get_drvdata(dev);
+	int ret = 0;
+	char page[10];
 	struct synaptics_rmi4_data *rmi4_data = g_rmi4_ptr;
 
-	if (sscanf(buf, "%u", &input) != 1)
-		return -EINVAL;
+	ret = snprintf(page, 10, "%d\n", rmi4_data->enable_wakeup_gesture);
+	ret = simple_read_from_buffer(user_buf, count, ppos, page, strlen(page));
+	return ret;
+}
+static ssize_t double_tap_enable_write_func(struct file *file, const char __user *user_buf, size_t count, loff_t *ppos)
+{
+	int ret, write_flag = 0;
+	char page[10] = {0};
+	struct synaptics_rmi4_data *rmi4_data = g_rmi4_ptr;
 
-	input = input > 0 ? 1 : 0;
+	ret = copy_from_user(page, user_buf, count);
+	ret = sscanf(page, "%d", &write_flag);
 
+	write_flag = write_flag > 0 ? 1 : 0;
 	if (rmi4_data->f11_wakeup_gesture || rmi4_data->f12_wakeup_gesture)
-		rmi4_data->enable_wakeup_gesture = input;
+		rmi4_data->enable_wakeup_gesture = write_flag;
 
 	return count;
 }
+static const struct file_operations double_tap_enable_proc_fops = {
+	.write = double_tap_enable_write_func,
+	.read =  double_tap_enable_read_func,
+	.open = simple_open,
+	.owner = THIS_MODULE,
+};
+#endif
 
  /**
  * synaptics_rmi4_set_page()
@@ -2957,10 +2974,21 @@ flash_prog_mode:
 		}
 	}
 
-	if (rmi4_data->f11_wakeup_gesture || rmi4_data->f12_wakeup_gesture)
-		rmi4_data->enable_wakeup_gesture = WAKEUP_GESTURE;
-	else
+#if ENABLE_GESTURES_BY_DEFAULT
+	if (rmi4_data->f11_wakeup_gesture || rmi4_data->f12_wakeup_gesture) {
+		rmi4_data->enable_wakeup_gesture = true;
+	} else {
 		rmi4_data->enable_wakeup_gesture = false;
+	}
+#else
+	rmi4_data->enable_wakeup_gesture = false;
+#endif
+
+	if (rmi4_data->enable_wakeup_gesture) {
+		TPD_DMESG("Enabled wakeup gesture");
+	} else {
+		TPD_DMESG("Did not enable wakeup gesture");
+	}
 
 	/* Enable the interrupt sources */
 	for (ii = 0; ii < rmi4_data->num_of_intr_regs; ii++) {
@@ -4048,6 +4076,39 @@ static struct tpd_driver_t synaptics_rmi4_driver = {
 static struct i2c_board_info __initdata i2c_tpd = { I2C_BOARD_INFO("synaptics_dsx", (TPD_I2C_ADDR))};
 #endif
 
+#define CREATE_PROC_NODE(PARENT, NAME, MODE)\
+	node = proc_create(#NAME, MODE, PARENT, &NAME##_proc_fops);\
+	if (node == NULL) {\
+		ret = -ENOMEM;\
+		TPD_DMESG("Couldn't create " #NAME " in " #PARENT "\n");\
+	}
+
+#ifdef SUPPORT_GESTURES
+#define CREATE_GESTURE_NODE(NAME)\
+	CREATE_PROC_NODE(touchpanel, NAME##_enable, 0666)
+#endif
+
+static int init_synaptics_proc(void)
+{
+	int ret = 0;
+	struct proc_dir_entry *touchpanel = NULL;
+	struct proc_dir_entry *node  = NULL;
+
+	touchpanel = proc_mkdir("touchpanel", NULL);
+	if (touchpanel == NULL) {
+		ret = -ENOMEM;
+		TPD_DMESG("Couldn't create touchpanel proc directory\n");
+	}
+
+#ifdef SUPPORT_GESTURES
+	CREATE_GESTURE_NODE(double_tap);
+#endif
+
+	CREATE_PROC_NODE(touchpanel, productinfo, 0444);
+
+	return ret;
+}
+
  /**
  * synaptics_rmi4_init()
  *
@@ -4066,10 +4127,12 @@ static int __init synaptics_rmi4_init(void)
 	i2c_register_board_info(TPD_I2C_BUS, &i2c_tpd, 1);
 #endif
 
-	if(tpd_driver_add(&synaptics_rmi4_driver) < 0){
+	if (tpd_driver_add(&synaptics_rmi4_driver) < 0) {
 		pr_err("Fail to add tpd driver\n");
 		return -ENODEV;
 	}
+
+	init_synaptics_proc();
 
 	return 0;
 }
