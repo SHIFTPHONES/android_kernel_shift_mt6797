@@ -2513,6 +2513,8 @@ mtk_cfg80211_change_station(struct wiphy *wiphy, struct net_device *ndev, const 
 
 	prGlueInfo = (P_GLUE_INFO_T) wiphy_priv(wiphy);
 	ASSERT(prGlueInfo);
+	if (prGlueInfo == NULL)
+		return -EINVAL;
 
 	/* make up command */
 
@@ -2624,6 +2626,8 @@ int mtk_cfg80211_add_station(struct wiphy *wiphy, struct net_device *ndev,
 
 	prGlueInfo = (P_GLUE_INFO_T) wiphy_priv(wiphy);
 	ASSERT(prGlueInfo);
+	if (prGlueInfo == NULL)
+		return -EINVAL;
 
 	/* make up command */
 
@@ -2798,6 +2802,8 @@ int	mtk_cfg80211_suspend(struct wiphy *wiphy, struct cfg80211_wowlan *wow)
 		goto end;
 
 	prGlueInfo = (P_GLUE_INFO_T) wiphy_priv(wiphy);
+	if (prGlueInfo == NULL || prGlueInfo->prAdapter == NULL)
+		goto end;
 
 	set_bit(SUSPEND_FLAG_FOR_WAKEUP_REASON, &prGlueInfo->prAdapter->ulSuspendFlag);
 	set_bit(SUSPEND_FLAG_CLEAR_WHEN_RESUME, &prGlueInfo->prAdapter->ulSuspendFlag);
@@ -2830,7 +2836,13 @@ int mtk_cfg80211_resume(struct wiphy *wiphy)
 		goto end;
 
 	prGlueInfo = (P_GLUE_INFO_T) wiphy_priv(wiphy);
+	if (prGlueInfo == NULL)
+		goto end;
+
 	prAdapter = prGlueInfo->prAdapter;
+	if (prAdapter == NULL)
+		goto end;
+
 	clear_bit(SUSPEND_FLAG_CLEAR_WHEN_RESUME, &prAdapter->ulSuspendFlag);
 	pprBssDesc = &prAdapter->rWifiVar.rScanInfo.rNloParam.aprPendingBssDescToInd[0];
 	for (; i < SCN_SSID_MATCH_MAX_NUM; i++) {
@@ -2856,6 +2868,9 @@ INT_32 mtk_cfg80211_process_str_cmd(P_GLUE_INFO_T prGlueInfo, PUINT_8 cmd, INT_3
 {
 	WLAN_STATUS rStatus = WLAN_STATUS_SUCCESS;
 	UINT_32 u4SetInfoLen = 0;
+
+	if (prGlueInfo == NULL)
+		return -EINVAL;
 
 	if (strnicmp(cmd, "tdls-ps ", 8) == 0) {
 #if CFG_SUPPORT_TDLS
