@@ -780,16 +780,17 @@ static int setup_ovl_sec(DISP_MODULE_ENUM module, void *handle, int is_engine_se
 			* if we switch ovl to nonsec BUT its setting is still sec */
 			for (i = 0; i < ovl_layer_num(module); i++)
 				ovl_layer_switch(module, i, 0, nonsec_switch_handle);
-				/*in fact, dapc/port_sec will be disabled by cmdq */
-				cmdqRecSecureEnablePortSecurity(nonsec_switch_handle, (1LL << cmdq_engine));
-				/* cmdqRecSecureEnableDAPC(handle, (1LL << cmdq_engine)); */
-				/*cmdqRecSetEventToken(nonsec_switch_handle, cmdq_event_nonsec_end);*/
-				/*cmdqRecFlushAsync(nonsec_switch_handle);*/
-				cmdqRecFlush(nonsec_switch_handle);
-				cmdqRecDestroy(nonsec_switch_handle);
-				/*cmdqRecWait(handle, cmdq_event_nonsec_end);*/
-				DDPMSG("[SVP] switch ovl%d to nonsec\n", ovl_idx);
-			}
+
+			/*in fact, dapc/port_sec will be disabled by cmdq */
+			cmdqRecSecureEnablePortSecurity(nonsec_switch_handle, (1LL << cmdq_engine));
+			/* cmdqRecSecureEnableDAPC(handle, (1LL << cmdq_engine)); */
+			/*cmdqRecSetEventToken(nonsec_switch_handle, cmdq_event_nonsec_end);*/
+			/*cmdqRecFlushAsync(nonsec_switch_handle);*/
+			cmdqRecFlush(nonsec_switch_handle);
+			cmdqRecDestroy(nonsec_switch_handle);
+			/*cmdqRecWait(handle, cmdq_event_nonsec_end);*/
+			DDPMSG("[SVP] switch ovl%d to nonsec\n", ovl_idx);
+		}
 		ovl_is_sec[ovl_idx] = 0;
 	}
 
