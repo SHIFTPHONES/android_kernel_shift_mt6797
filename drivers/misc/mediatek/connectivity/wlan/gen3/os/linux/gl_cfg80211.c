@@ -2845,6 +2845,9 @@ int mtk_cfg80211_resume(struct wiphy *wiphy)
 
 	clear_bit(SUSPEND_FLAG_CLEAR_WHEN_RESUME, &prAdapter->ulSuspendFlag);
 	pprBssDesc = &prAdapter->rWifiVar.rScanInfo.rNloParam.aprPendingBssDescToInd[0];
+	if (pprBssDesc == NULL)
+		goto end;
+
 	for (; i < SCN_SSID_MATCH_MAX_NUM; i++) {
 		if (pprBssDesc[i] == NULL)
 			break;
