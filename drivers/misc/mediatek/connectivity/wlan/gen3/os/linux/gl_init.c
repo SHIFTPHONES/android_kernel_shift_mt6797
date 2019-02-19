@@ -1740,6 +1740,8 @@ static VOID wlanNetDestroy(struct wireless_dev *prWdev)
 VOID wlanSetSuspendMode(P_GLUE_INFO_T prGlueInfo, BOOLEAN fgEnable)
 {
 	struct net_device *prDev = NULL;
+	UINT_32 u4PacketFilter = 0;
+	UINT_32 u4SetInfoLen = 0;
 
 	if (!prGlueInfo)
 		return;
@@ -1755,6 +1757,15 @@ VOID wlanSetSuspendMode(P_GLUE_INFO_T prGlueInfo, BOOLEAN fgEnable)
 	prDev = prGlueInfo->prDevHandler;
 	if (!prDev)
 		return;
+
+#if CFG_ENABLE_WIFI_DIRECT_CFG_80211
+	u4PacketFilter = prGlueInfo->prAdapter->u4OsPacketFilter & (~PARAM_PACKET_FILTER_P2P_MASK);
+#endif
+	if (kalIoctl(prGlueInfo,
+		wlanoidSetCurrentPacketFilter,
+		&u4PacketFilter,
+		sizeof(u4PacketFilter), FALSE, FALSE, TRUE, &u4SetInfoLen) != WLAN_STATUS_SUCCESS)
+		DBGLOG(INIT, ERROR, "set packet filter failed.\n");
 
 	kalSetNetAddressFromInterface(prGlueInfo, prDev, fgEnable);
 }
