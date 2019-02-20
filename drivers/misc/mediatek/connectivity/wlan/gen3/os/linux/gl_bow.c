@@ -298,10 +298,12 @@ static ssize_t bow_ampc_write(IN struct file *filp, OUT const char __user *buf, 
 	if ((prGlueInfo->rBowInfo.fgIsRegistered == FALSE) || (prGlueInfo->ulFlag & GLUE_FLAG_HALT))
 		return -EFAULT;
 
-	if (size > MAX_BUFFER_SIZE)
+	if (size >= MAX_BUFFER_SIZE)
 		return -EINVAL;
 	else if (copy_from_user(aucBuffer, buf, size))
 		return -EIO;
+
+	aucBuffer[size] = '\0';
 
 	DBGLOG(BOW, EVENT, "AMP driver CMD buffer size: %zu\n", size);
 
