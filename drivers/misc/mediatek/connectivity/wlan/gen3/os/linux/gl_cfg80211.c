@@ -2795,15 +2795,21 @@ int	mtk_cfg80211_suspend(struct wiphy *wiphy, struct cfg80211_wowlan *wow)
 {
 	P_GLUE_INFO_T prGlueInfo = NULL;
 
-	if (kalHaltTryLock())
+	if (kalHaltTryLock()) {
+		DBGLOG(REQ, WARN, "%s: Could not lock!\n", __func__);
 		return 0;
+	}
 
-	if (kalIsHalted() || !wiphy)
+	if (kalIsHalted() || !wiphy) {
+		DBGLOG(REQ, WARN, "%s: %s!\n", __func__, wiphy?"kalIsHalted":"wiphy is NULL");
 		goto end;
+	}
 
 	prGlueInfo = (P_GLUE_INFO_T) wiphy_priv(wiphy);
-	if (prGlueInfo == NULL || prGlueInfo->prAdapter == NULL)
+	if (prGlueInfo == NULL || prGlueInfo->prAdapter == NULL) {
+		DBGLOG(REQ, WARN, "%s: %s is NULL!\n", __func__, prGlueInfo?"prGlueInfo->prAdapter":"prGlueInfo");
 		goto end;
+	}
 
 	set_bit(SUSPEND_FLAG_FOR_WAKEUP_REASON, &prGlueInfo->prAdapter->ulSuspendFlag);
 	set_bit(SUSPEND_FLAG_CLEAR_WHEN_RESUME, &prGlueInfo->prAdapter->ulSuspendFlag);
@@ -2829,24 +2835,30 @@ int mtk_cfg80211_resume(struct wiphy *wiphy)
 	P_ADAPTER_T prAdapter = NULL;
 	UINT_8 i = 0;
 
-	if (kalHaltTryLock())
+	if (kalHaltTryLock()) {
+		DBGLOG(REQ, WARN, "%s: Could not lock!\n", __func__);
 		return 0;
+	}
 
-	if (kalIsHalted() || !wiphy)
+	if (kalIsHalted() || !wiphy) {
+		DBGLOG(REQ, WARN, "%s: %s!\n", __func__, wiphy?"kalIsHalted":"wiphy is NULL");
 		goto end;
+	}
 
 	prGlueInfo = (P_GLUE_INFO_T) wiphy_priv(wiphy);
-	if (prGlueInfo == NULL)
+	if (prGlueInfo == NULL || prGlueInfo->prAdapter == NULL) {
+		DBGLOG(REQ, WARN, "%s: %s is NULL!\n", __func__, prGlueInfo?"prGlueInfo->prAdapter":"prGlueInfo");
 		goto end;
+	}
 
 	prAdapter = prGlueInfo->prAdapter;
-	if (prAdapter == NULL)
-		goto end;
 
 	clear_bit(SUSPEND_FLAG_CLEAR_WHEN_RESUME, &prAdapter->ulSuspendFlag);
 	pprBssDesc = &prAdapter->rWifiVar.rScanInfo.rNloParam.aprPendingBssDescToInd[0];
-	if (pprBssDesc == NULL)
+	if (pprBssDesc == NULL) {
+		DBGLOG(REQ, WARN, "%s: pprBssDesc is NULL!\n", __func__);
 		goto end;
+	}
 
 	for (; i < SCN_SSID_MATCH_MAX_NUM; i++) {
 		if (pprBssDesc[i] == NULL)
