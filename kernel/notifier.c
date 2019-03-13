@@ -82,7 +82,8 @@ static int notifier_call_chain(struct notifier_block **nl,
 
 #if defined(CONFIG_SMP)
 #if defined(CONFIG_MTK_CPU_HOTPLUG_DEBUG_1) || \
-	defined(CONFIG_MTK_CPU_HOTPLUG_DEBUG_2)
+	defined(CONFIG_MTK_CPU_HOTPLUG_DEBUG_2) || \
+	defined(CONFIG_MTK_CPU_HOTPLUG_DEBUG_3)
 	int index = 0;
 #endif
 #endif /* CONFIG_SMP */

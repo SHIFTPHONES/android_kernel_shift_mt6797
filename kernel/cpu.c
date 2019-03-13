@@ -52,7 +52,8 @@ void cpu_maps_update_done(void)
 EXPORT_SYMBOL(cpu_notifier_register_done);
 
 #if defined(CONFIG_MTK_CPU_HOTPLUG_DEBUG_1) || \
-	defined(CONFIG_MTK_CPU_HOTPLUG_DEBUG_2)
+	defined(CONFIG_MTK_CPU_HOTPLUG_DEBUG_2) || \
+	defined(CONFIG_MTK_CPU_HOTPLUG_DEBUG_3)
 RAW_NOTIFIER_HEAD(cpu_chain);
 #else
 static RAW_NOTIFIER_HEAD(cpu_chain);
