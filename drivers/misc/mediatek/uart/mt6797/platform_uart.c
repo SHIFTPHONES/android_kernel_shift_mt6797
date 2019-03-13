@@ -2224,6 +2224,11 @@ void mtk_uart_restore(void)
 	struct mtk_uart *uart;
 
 	uart = console_port;
+	if (!uart) {
+		pr_err("[UART] %s: uart is null!\n", __func__);
+		return;
+	}
+
 	base = uart->base;
 
 	mtk_uart_power_up(uart);
